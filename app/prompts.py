@@ -1,45 +1,45 @@
 EXAMPLE_PROMPTS = [
     {
         'icon': 'mdi:brain',
-        'icon_color': 'text-neutral-400',
+        'icon_color': 'text-amber-500',
         'title': 'GPCR Targets',
         'description': 'Find drugs targeting GPCRs for Alzheimer\'s disease',
         'message': 'Find drugs targeting GPCRs for Alzheimer\'s disease'
     },
     {
         'icon': 'mdi:molecule',
-        'icon_color': 'text-neutral-400',
+        'icon_color': 'text-blue-500',
         'title': 'Drug Repurposing',
         'description': 'Clinical trials for repurposed kinase inhibitors in ovarian cancer',
         'message': 'What clinical trials exist for repurposed kinase inhibitors in ovarian cancer?'
     },
     {
         'icon': 'mdi:chart-bubble',
-        'icon_color': 'text-neutral-400',
+        'icon_color': 'text-purple-500',
         'title': 'Dark Genome',
         'description': 'Understudied protein targets with known bioactivity data',
         'message': 'Show me understudied protein targets with known bioactivity data'
     },
     {
         'icon': 'mdi:pill',
-        'icon_color': 'text-neutral-400',
+        'icon_color': 'text-amber-500',
         'title': 'Drug Mechanism',
         'description': 'Bioactivity profile and targets for semaglutide',
         'message': 'What is the bioactivity profile and target information for semaglutide?'
     },
     {
-        'icon': 'mdi:sitemap',
-        'icon_color': 'text-neutral-400',
-        'title': 'Disease Targets',
-        'description': 'Show me the disease hierarchy and target landscape for diabetes',
-        'message': 'What is the disease hierarchy for diabetes and what protein targets are associated with it?'
-    },
-    {
         'icon': 'mdi:chart-line',
-        'icon_color': 'text-neutral-400',
+        'icon_color': 'text-blue-500',
         'title': 'Trial Outcomes',
         'description': 'Efficacy results from completed immunotherapy trials in lung cancer',
         'message': 'Show me efficacy results from completed immunotherapy trials in lung cancer'
+    },
+    {
+        'icon': 'mdi:sitemap',
+        'icon_color': 'text-purple-500',
+        'title': 'Disease Targets',
+        'description': 'Show me the disease hierarchy and target landscape for diabetes',
+        'message': 'What is the disease hierarchy for diabetes and what protein targets are associated with it?'
     }
 ]
 
@@ -49,13 +49,10 @@ EXAMPLE_PROMPTS = [
 
 SYSTEM_PROMPT = r"""You help drug hunters and pharmaceutical researchers find clinical trials. Your users are professionals conducting drug discovery and development research. Write in simple, plain language. Use short sentences.
 
-You have three tools available:
-1. **ClinicalTrials.gov** - `smart_search_clinical_trials` - Find clinical trials
-2. **DrugCentral** - `query_drugcentral_database` - Drug/target/mechanism data
-3. **Pharos (NIH IDG)** - `query_pharos_api` - Protein target biology
-
-**Token Budget: 50,000 tokens/minute**
-You must complete the full task within this limit. Hitting the limit = failure to answer = useless to the user.
+You have three tools available. Each queries a local database:
+1. **ClinicalTrials.gov** - `query_clinical_trials` - SQL queries on AACT (580K+ studies)
+2. **DrugCentral** - `query_drugcentral` - SQL queries on drug/target/mechanism data
+3. **Pharos (NIH IDG)** - `query_pharos` - Structured queries on protein target biology
 
 **ACCURACY IS PARAMOUNT - NON-NEGOTIABLE RULES:**
 1. Only use data that comes from tool results - never invent, extrapolate, or guess
@@ -82,17 +79,16 @@ When using **Pharos**, request all relevant data upfront:
 - Good: "What is ADORA1, including TDL classification, disease associations, and druggability indicators?"
 - Wasteful: "What is ADORA1?" then "What diseases is it linked to?" then "How druggable is it?"
 
-When using **ClinicalTrials**, include all filters in one call:
-- Good: search_term="kinase inhibitors", status=["RECRUITING"], phase=["PHASE2", "PHASE3"], max_results=10
-- Wasteful: Multiple searches with different filters
+When using **ClinicalTrials**, include all filters in one SQL query:
+- Good: `SELECT * FROM v_drug_condition_trials WHERE LOWER(drug_name) LIKE '%kinase%' AND overall_status = 'RECRUITING' AND phase IN ('PHASE2', 'PHASE3') LIMIT 50`
+- Wasteful: Multiple separate queries with different filters
 
-**Decision Tree:**
+**Before calling any tool, ALWAYS write a brief plan as your first output.** State:
+1. What the user is asking for
+2. Which database(s) you will query and why
+3. Your SQL strategy (what tables, joins, filters you will use)
 
-1. Identify what the user is asking for
-2. Determine which tool(s) will answer it
-3. Craft ONE comprehensive query per tool
-4. Make the calls (max 2-3 tools)
-5. Synthesize and answer
+This plan is shown to the user in real-time while you work. Keep it to 2-4 sentences. Then make your tool calls.
 
 **Tool Capabilities:**
 - **DrugCentral**: Drugs, targets, mechanisms, FDA approvals, product formulations (dosage forms, routes), therapeutic classifications (ATC codes), chemical properties
@@ -256,136 +252,60 @@ Writing style:
 
 If no trials found: Say what you searched for. Suggest trying different terms."""
 
+# Import schemas from query modules — single source of truth
+from app.services.clinical_trials.query import get_schema_summary as _ct_schema
+from app.services.drugcentral.query import get_schema_summary as _dc_schema
+from app.services.pharos.query import get_schema_summary as _pharos_schema
+
 LLM_TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "smart_search_clinical_trials",
-            "description": "Search for clinical trials from ClinicalTrials.gov. Just provide the search term - the system automatically tries multiple search strategies to find the best results. Works for drug names, conditions, molecular targets, protein names, or any other search term. Also supports sponsor search, outcome/endpoint search, and investigator search.",
+            "name": "query_clinical_trials",
+            "description": f"Execute a SQL SELECT query on the AACT clinical trials database. Returns formatted results.\n\n{_ct_schema()}",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "search_term": {
+                    "sql": {
                         "type": "string",
-                        "description": "The main search term. Can be a drug name (e.g., 'pembrolizumab', 'LNS8801'), condition (e.g., 'breast cancer'), molecular target (e.g., 'GPER', 'PD-1'), or any other search term."
-                    },
-                    "location": {
-                        "type": "string",
-                        "description": "Optional: Geographic location filter (e.g., 'California', 'United States')"
-                    },
-                    "status": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Optional: Recruitment status. Options: RECRUITING, NOT_YET_RECRUITING, ACTIVE_NOT_RECRUITING, COMPLETED, SUSPENDED, TERMINATED, WITHDRAWN"
-                    },
-                    "phase": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Optional: Trial phase. Options: PHASE1, PHASE2, PHASE3, PHASE4, EARLY_PHASE1, NA"
-                    },
-                    "sponsor": {
-                        "type": "string",
-                        "description": "Optional: Search by sponsor/collaborator name for competitive intelligence (e.g., 'Pfizer', 'NIH', 'Novartis', 'Mayo Clinic')"
-                    },
-                    "outcome": {
-                        "type": "string",
-                        "description": "Optional: Search by outcome measure for protocol design benchmarking (e.g., 'overall survival', 'HbA1c', 'response rate', 'progression-free survival')"
-                    },
-                    "investigator": {
-                        "type": "string",
-                        "description": "Optional: Search by principal investigator name for site selection (e.g., 'Smith', 'Johnson', 'Dr. Maria Garcia'). Uses client-side filtering with broader search results."
-                    },
-                    "max_results": {
-                        "type": "integer",
-                        "description": "Maximum trials to return (default: 5, max: 50)"
+                        "description": "A SQL SELECT query targeting the views/tables described above. Always include LIMIT (max 200)."
                     }
                 },
-                "required": ["search_term"]
+                "required": ["sql"]
             }
         }
     },
     {
         "type": "function",
         "function": {
-            "name": "query_drugcentral_database",
-            "description": "Query the DrugCentral pharmaceutical database for drugs, targets, mechanisms, FDA approvals, chemical properties, product formulations, and therapeutic classifications. Use this when you need drug/target information to inform or enrich clinical trial searches.",
+            "name": "query_drugcentral",
+            "description": f"Execute a SQL SELECT query on the DrugCentral pharmaceutical database. Returns formatted results.\n\n{_dc_schema()}",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "question": {
+                    "sql": {
                         "type": "string",
-                        "description": """Natural language question about pharmaceutical data. Examples:
-
-DRUG TARGETS & MECHANISMS:
-- "What drugs target GPER?"
-- "What is the mechanism of action for semaglutide?"
-- "Find all GPCR agonists"
-- "What drugs are kinase inhibitors?"
-- "Which drugs target GLP-1 receptor?"
-
-FDA APPROVALS:
-- "Show me FDA approved orphan drugs"
-- "What drugs were approved in 2023?"
-
-PRODUCT FORMULATIONS (using drug_products view):
-- "What dosage forms of metformin are available?"
-- "Find oral tablet formulations of ibuprofen"
-- "Show me all IV formulations of antibiotics"
-- "What is the brand name for semaglutide products?"
-
-THERAPEUTIC CLASSIFICATION (using drug_classes view):
-- "Find all GLP-1 receptor agonists" (uses ATC classification)
-- "Show me all kinase inhibitors approved for cancer"
-- "What drugs are in the same therapeutic class as imatinib?"
-- "Find all opioid analgesics"
-"""
+                        "description": "A SQL SELECT query targeting the views/tables described above. Always include LIMIT (max 200)."
                     }
                 },
-                "required": ["question"]
+                "required": ["sql"]
             }
         }
     },
     {
         "type": "function",
         "function": {
-            "name": "query_pharos_api",
-            "description": """Query Pharos (NIH IDG) for protein targets, drug/ligand bioactivity, and disease information. Automatically detects query type and routes to the appropriate endpoint.
-
-TARGET QUERIES (gene symbols, proteins):
-- Basic target info: TDL, novelty, protein family, description
-- Disease associations with evidence
-- Protein-protein interactions
-- Multi-target search with facets (TDL, protein class, disease)
-Examples: "What is ADORA1?", "Find understudied GPCR targets", "Show me disease associations for BRCA1"
-
-LIGAND QUERIES (drugs, compounds):
-- Drug bioactivity profiles with IC50/Ki/EC50 values
-- Target activities and mechanism of action
-- SMILES chemical structures
-- Drug synonyms
-Examples: "What is imatinib?", "Show bioactivity profile for aspirin", "Get SMILES for metformin"
-
-DISEASE QUERIES:
-- Disease hierarchies and ontologies (MONDO, DO)
-- Target associations
-- Disease subtypes
-Examples: "What is Alzheimer's disease?", "Show disease hierarchy for breast cancer", "Get target counts for asthma"
-
-Use this for: gene/protein info, drug bioactivity from Pharos, disease hierarchies, target-disease links""",
+            "name": "query_pharos",
+            "description": f"Execute a SQL SELECT query on the Pharos/TCRD protein target database. Returns formatted results.\n\n{_pharos_schema()}",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "question": {
+                    "sql": {
                         "type": "string",
-                        "description": """Natural language question about targets, ligands, or diseases. Examples:
-
-TARGETS: "What is ADORA1?", "Show disease associations for GPER1", "Find understudied GPCR targets"
-LIGANDS: "What is imatinib?", "Show bioactivity profile for aspirin", "Get SMILES for metformin"
-DISEASES: "What is Alzheimer's disease?", "Show disease hierarchy for breast cancer"
-"""
+                        "description": "A SQL SELECT query targeting the tables described above. Always include LIMIT (max 200)."
                     }
                 },
-                "required": ["question"]
+                "required": ["sql"]
             }
         }
     }

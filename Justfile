@@ -1,25 +1,16 @@
 default:
     @just --list
 
-# Initialize project: download dependencies and prepare environment
+# Initialize project: download data and prepare environment
 init:
     #!/usr/bin/env bash
     set -euo pipefail
     cp -n .env.example .env
-    echo "Downloading DrugCentral database dump..."
-    mkdir -p data
-    cd data
-    if [ ! -f "01-drugcentral.dump.11012023.sql.gz" ]; then
-        curl -L -o 01-drugcentral.dump.11012023.sql.gz \
-            https://unmtid-dbs.net/download/drugcentral.dump.11012023.sql.gz
-        echo "DrugCentral database dump downloaded"
-    else
-        echo "DrugCentral database dump already exists"
-    fi
-    cd ..
-    echo ""
     echo "Building Docker images..."
     docker compose build
+    echo ""
+    echo "Downloading datasets (about 4 GB, skipped if already present)..."
+    just download-data
     echo ""
     echo "========================================="
     echo "Project initialized successfully!"
@@ -31,8 +22,8 @@ init:
     echo "    - SECRET_KEY: Generate a secure random key"
     echo "    - ANTHROPIC_API_KEY: Your Anthropic API key"
     echo "    - OPENAI_API_KEY: Your OpenAI API key (if using OpenAI models)"
+    echo "    - GEMINI_API_KEY: Your Google Gemini API key (if using Gemini models)"
     echo "    - POSTGRES_PASSWORD: Secure password for PostgreSQL"
-    echo "    - DRUGCENTRAL_PASSWORD: Secure password for DrugCentral database"
     echo ""
     echo "Once configured, start the services with:"
     echo "  just up"
@@ -41,6 +32,18 @@ init:
     echo "  - FastAPI: http://localhost:8000"
     echo "  - PgWeb:   http://localhost:8081"
     echo ""
+
+# Download the Parquet datasets that are missing (no gh CLI needed)
+download-data:
+    docker compose run --rm --no-deps fastapi python -m app.data_sync download
+
+# Update every dataset to the newest monthly release
+update-data:
+    docker compose run --rm --no-deps fastapi python -m app.data_sync update
+
+# Show local vs latest dataset versions
+data-status:
+    docker compose run --rm --no-deps fastapi python -m app.data_sync status
 
 # Build Docker images
 build:
@@ -53,6 +56,10 @@ up:
 # Stop services
 down:
     docker compose down
+
+# View logs
+logs:
+    docker compose logs -f
 
 # Create a new migration (like Django's makemigrations)
 makemigrations name:

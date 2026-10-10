@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pharma Pilot — {{ rounds[0].question if rounds else "Research Report" }}</title>
+    <link rel="stylesheet" href="report.css">
+</head>
+<body>
+
+    <!-- Report Header -->
+    <div class="report-header">
+        <div class="logo-area">
+            <div class="logo-icon">⚗</div>
+            <span class="logo-text">Pharma Pilot</span>
+        </div>
+        <h1>{{ rounds[0].question if rounds else "Research Report" }}</h1>
+        <div class="subtitle">
+            <span>{{ generated_at.strftime('%B %d, %Y') }}</span>
+            {% if db_queries %}
+            <span class="separator">·</span>
+            <span>Data from {{ db_queries.keys() | list | join(", ") }}</span>
+            {% endif %}
+            {% if rounds %}
+            <span class="separator">·</span>
+            <span>{{ rounds | length }} question{{ "s" if rounds | length != 1 else "" }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Conversation Rounds -->
+    {% for round in rounds %}
+    <div class="conversation-round avoid-break">
+        <!-- Question -->
+        <div class="research-question">
+            <h2>{% if rounds | length > 1 %}Question {{ loop.index }}{% else %}Research Question{% endif %}</h2>
+            <p>{{ round.question }}</p>
+        </div>
+
+        <!-- Findings -->
+        {% if round.answer_html %}
+        <div class="findings-block">
+            {{ round.answer_html | safe }}
+        </div>
+        {% endif %}
+
+        <!-- Tool calls for this round -->
+        {% if round.tool_calls %}
+        <div class="round-queries">
+            <p class="round-queries-label">Queries executed for this question:</p>
+            <ul>
+                {% for tc in round.tool_calls %}
+                <li><strong>{{ tc.db_name }}</strong> — {{ tc.summary }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if not loop.last %}
+    <div class="round-separator"></div>
+    {% endif %}
+    {% endfor %}
+
+    <!-- Data Sources -->
+    {% if db_queries %}
+    <div class="sources-section">
+        <h2>Data Sources</h2>
+        <p>The findings in this report were produced by querying the following biomedical databases:</p>
+        {% for db_name, queries in db_queries.items() %}
+        <div class="source-group">
+            <h3>{{ db_name }}</h3>
+            <ul>
+                {% for summary in queries %}
+                <li>{{ summary }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</body>
+</html>

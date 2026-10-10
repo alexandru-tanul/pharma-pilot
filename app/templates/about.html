@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}About — Pharma Pilot{% endblock title %}
+
+{% block content %}
+<div class="flex-1 flex flex-col overflow-y-auto no-scrollbar">
+    <div class="w-full max-w-4xl mx-auto px-6 md:px-12 lg:px-20 py-10">
+
+        <!-- Header -->
+        <div class="mb-12 animate-fade-in">
+            <div class="inline-flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-1.5 mb-4">
+                <iconify-icon icon="mdi:information-outline" class="text-emerald-400 text-sm"></iconify-icon>
+                <span class="text-xs text-gray-400 font-medium">About This System</span>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
+                About <span class="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Pharma Pilot</span>
+            </h1>
+            <p class="text-gray-500 text-base leading-relaxed max-w-2xl">
+                An AI-powered pharmaceutical research assistant that translates natural-language questions into SQL queries across three major biomedical databases.
+            </p>
+        </div>
+
+        <!-- How it works -->
+        <section class="mb-10 animate-fade-in-delay-1">
+            <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <iconify-icon icon="mdi:cog-outline" class="text-emerald-400"></iconify-icon>
+                How It Works
+            </h2>
+            <div class="bg-white/[0.02] border border-white/[0.06] rounded-xl p-6 space-y-4">
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm font-bold">1</div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-200 mb-1">You ask a question in plain language</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">For example: "What kinase inhibitors are being tested in ovarian cancer clinical trials?"</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm font-bold">2</div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-200 mb-1">The AI plans which databases to query</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">An LLM analyses your question and decides which of the three biomedical databases contain relevant data.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm font-bold">3</div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-200 mb-1">SQL queries are generated and executed</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">The system translates your intent into read-only SQL SELECT queries. If a query fails, the system self-corrects and retries with improved SQL.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm font-bold">4</div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-200 mb-1">Results are synthesised into a research answer</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">The AI combines results from multiple queries into a structured answer with tables, insights, and source attribution.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture diagram -->
+        <section class="mb-10 animate-fade-in-delay-1">
+            <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <iconify-icon icon="mdi:sitemap-outline" class="text-emerald-400"></iconify-icon>
+                System Architecture
+            </h2>
+            <div class="bg-white/[0.02] border border-white/[0.06] rounded-xl p-6 md:p-8">
+                <div class="flex flex-col items-center gap-0">
+
+                    <!-- User -->
+                    <div class="w-full max-w-md text-center bg-white/[0.04] border border-white/[0.08] rounded-xl px-5 py-4">
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <iconify-icon icon="mdi:account-outline" class="text-gray-400 text-lg"></iconify-icon>
+                            <span class="text-sm font-semibold text-gray-200">User (Browser)</span>
+                        </div>
+                        <p class="text-xs text-gray-600">Natural-language question via HTMX form</p>
+                    </div>
+
+                    <!-- Arrow down -->
+                    <div class="flex flex-col items-center py-1">
+                        <div class="w-px h-5 bg-emerald-500/40"></div>
+                        <span class="text-[10px] text-emerald-400/70 font-mono my-0.5">POST /send</span>
+                        <div class="w-px h-3 bg-emerald-500/40"></div>
+                        <iconify-icon icon="mdi:chevron-down" class="text-emerald-400/60 text-base -mt-1"></iconify-icon>
+                    </div>
+
+                    <!-- FastAPI Backend container -->
+                    <div class="w-full border border-emerald-500/20 rounded-xl bg-emerald-500/[0.03] p-4 md:p-6">
+                        <div class="flex items-center justify-center gap-2 mb-4">
+                            <iconify-icon icon="mdi:server-outline" class="text-emerald-400 text-lg"></iconify-icon>
+                            <span class="text-sm font-semibold text-emerald-400">FastAPI Backend</span>
+                        </div>
+
+                        <!-- Agentic Loop -->
+                        <div class="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg p-4 mb-4">
+                            <h4 class="text-xs font-semibold text-gray-300 mb-3 text-center uppercase tracking-wider">Agentic Loop (LLM + Tools)</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5">
+                                <div class="flex items-start gap-2">
+                                    <span class="text-emerald-400 text-xs font-bold mt-px">1.</span>
+                                    <span class="text-xs text-gray-500">Build context from conversation history</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="text-emerald-400 text-xs font-bold mt-px">2.</span>
+                                    <span class="text-xs text-gray-500">Call LLM, receive tool_calls or final answer</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="text-emerald-400 text-xs font-bold mt-px">3.</span>
+                                    <span class="text-xs text-gray-500">Execute SQL tools, feed results back to LLM</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="text-emerald-400 text-xs font-bold mt-px">4.</span>
+                                    <span class="text-xs text-gray-500">Iterate until synthesis is complete</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow down to databases -->
+                        <div class="flex justify-center mb-4">
+                            <div class="flex flex-col items-center">
+                                <div class="w-px h-3 bg-white/10"></div>
+                                <iconify-icon icon="mdi:chevron-down" class="text-white/20 text-base -mt-1"></iconify-icon>
+                            </div>
+                        </div>
+
+                        <!-- Three databases -->
+                        <div class="grid grid-cols-3 gap-2 md:gap-3 mb-4">
+                            <div class="text-center bg-blue-500/[0.06] border border-blue-500/20 rounded-lg px-2 py-3">
+                                <div class="w-2 h-2 rounded-full bg-blue-400 mx-auto mb-2"></div>
+                                <span class="text-xs font-medium text-blue-400 block">ClinicalTrials</span>
+                                <span class="text-[10px] text-blue-400/50">(AACT)</span>
+                            </div>
+                            <div class="text-center bg-amber-500/[0.06] border border-amber-500/20 rounded-lg px-2 py-3">
+                                <div class="w-2 h-2 rounded-full bg-amber-400 mx-auto mb-2"></div>
+                                <span class="text-xs font-medium text-amber-400 block">DrugCentral</span>
+                                <span class="text-[10px] text-amber-400/50">&nbsp;</span>
+                            </div>
+                            <div class="text-center bg-purple-500/[0.06] border border-purple-500/20 rounded-lg px-2 py-3">
+                                <div class="w-2 h-2 rounded-full bg-purple-400 mx-auto mb-2"></div>
+                                <span class="text-xs font-medium text-purple-400 block">Pharos</span>
+                                <span class="text-[10px] text-purple-400/50">(NIH TCRD)</span>
+                            </div>
+                        </div>
+
+                        <!-- Arrow down to DuckDB -->
+                        <div class="flex justify-center mb-4">
+                            <div class="flex flex-col items-center">
+                                <div class="w-px h-3 bg-white/10"></div>
+                                <iconify-icon icon="mdi:chevron-down" class="text-white/20 text-base -mt-1"></iconify-icon>
+                            </div>
+                        </div>
+
+                        <!-- DuckDB -->
+                        <div class="w-full max-w-xs mx-auto text-center bg-white/[0.04] border border-white/[0.08] rounded-lg px-4 py-3 mb-4">
+                            <div class="flex items-center justify-center gap-2 mb-1">
+                                <iconify-icon icon="mdi:database-outline" class="text-gray-400 text-base"></iconify-icon>
+                                <span class="text-xs font-semibold text-gray-300">DuckDB (in-memory)</span>
+                            </div>
+                            <p class="text-[10px] text-gray-600">Analytical SQL engine over Parquet files</p>
+                        </div>
+
+                        <!-- SSE footer -->
+                        <div class="flex items-center justify-center gap-2 pt-3 border-t border-white/[0.04]">
+                            <iconify-icon icon="mdi:broadcast" class="text-emerald-400/50 text-sm"></iconify-icon>
+                            <span class="text-[11px] text-gray-600">Real-time updates: PostgreSQL NOTIFY → SSE → Browser</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Sources -->
+        <section class="mb-10 animate-fade-in-delay-2">
+            <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <iconify-icon icon="mdi:database-outline" class="text-emerald-400"></iconify-icon>
+                Data Sources
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- ClinicalTrials.gov -->
+                <div class="bg-white/[0.02] border border-blue-500/20 rounded-xl p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                        <h3 class="text-sm font-semibold text-blue-400">ClinicalTrials.gov</h3>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed mb-3">
+                        The world's largest registry of clinical studies. Sourced from the AACT (Aggregate Analysis of ClinicalTrials.gov) dataset.
+                    </p>
+                    <div class="text-xs text-gray-600 space-y-1">
+                        <div class="flex justify-between"><span>Records</span><span class="text-gray-400">~580,000 studies</span></div>
+                        <div class="flex justify-between"><span>Includes</span><span class="text-gray-400">Phases, outcomes, arms</span></div>
+                    </div>
+                </div>
+                <!-- DrugCentral -->
+                <div class="bg-white/[0.02] border border-amber-500/20 rounded-xl p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-2 h-2 rounded-full bg-amber-400"></div>
+                        <h3 class="text-sm font-semibold text-amber-400">DrugCentral</h3>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed mb-3">
+                        Comprehensive drug information resource with regulatory, pharmacological, and safety data.
+                    </p>
+                    <div class="text-xs text-gray-600 space-y-1">
+                        <div class="flex justify-between"><span>Records</span><span class="text-gray-400">~4,500 active ingredients</span></div>
+                        <div class="flex justify-between"><span>Includes</span><span class="text-gray-400">Targets, ATC, FAERS</span></div>
+                    </div>
+                </div>
+                <!-- Pharos -->
+                <div class="bg-white/[0.02] border border-purple-500/20 rounded-xl p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-2 h-2 rounded-full bg-purple-400"></div>
+                        <h3 class="text-sm font-semibold text-purple-400">Pharos (NIH TCRD)</h3>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed mb-3">
+                        Target Central Resource Database from the Illuminating the Druggable Genome programme.
+                    </p>
+                    <div class="text-xs text-gray-600 space-y-1">
+                        <div class="flex justify-between"><span>Records</span><span class="text-gray-400">~20,000 protein targets</span></div>
+                        <div class="flex justify-between"><span>Includes</span><span class="text-gray-400">Tdark/Tbio/Tchem/Tclin</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technology Stack -->
+        <section class="mb-10 animate-fade-in-delay-2">
+            <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <iconify-icon icon="mdi:layers-outline" class="text-emerald-400"></iconify-icon>
+                Technology Stack
+            </h2>
+            <div class="bg-white/[0.02] border border-white/[0.06] rounded-xl p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-600 mb-3">Backend</h3>
+                        <ul class="space-y-2 text-sm text-gray-400">
+                            <li class="flex items-center gap-2"><span class="text-emerald-400">▸</span> Python 3.13 + FastAPI</li>
+                            <li class="flex items-center gap-2"><span class="text-emerald-400">▸</span> DuckDB (analytical SQL engine)</li>
+                            <li class="flex items-center gap-2"><span class="text-emerald-400">▸</span> PostgreSQL 17 (chat persistence)</li>
+                            <li class="flex items-center gap-2"><span class="text-emerald-400">▸</span> LiteLLM (LLM gateway)</li>
+                            <li class="flex items-center gap-2"><span class="text-emerald-400">▸</span> TortoiseORM + Aerich</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-600 mb-3">Frontend</h3>
+                        <ul class="space-y-2 text-sm text-gray-400">
+                            <li class="flex items-center gap-2"><span class="text-emerald-400">▸</span> Jinja2 (server-rendered templates)</li>
+                            <li class="flex items-center gap-2"><span class="text-emerald-400">▸</span> HTMX 2.x + Idiomorph</li>
+                            <li class="flex items-center gap-2"><span class="text-emerald-400">▸</span> Tailwind CSS (CDN)</li>
+                            <li class="flex items-center gap-2"><span class="text-emerald-400">▸</span> Server-Sent Events (real-time)</li>
+                            <li class="flex items-center gap-2"><span class="text-emerald-400">▸</span> Docker (multi-stage build)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Limitations -->
+        <section class="mb-10 animate-fade-in-delay-3">
+            <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <iconify-icon icon="mdi:alert-circle-outline" class="text-amber-400"></iconify-icon>
+                Limitations
+            </h2>
+            <div class="bg-white/[0.02] border border-amber-500/10 rounded-xl p-6">
+                <ul class="space-y-3 text-sm text-gray-400">
+                    <li class="flex gap-3">
+                        <span class="text-amber-400/70 flex-shrink-0">⚠</span>
+                        <span><strong class="text-gray-300">Data freshness.</strong> The biomedical data is loaded from static Parquet files. It reflects a point-in-time snapshot and may not include the most recent clinical trials or drug approvals.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-amber-400/70 flex-shrink-0">⚠</span>
+                        <span><strong class="text-gray-300">SQL generation accuracy.</strong> The AI may occasionally generate incorrect SQL queries. The system self-corrects up to 3 times, but some complex questions may still produce incomplete results.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-amber-400/70 flex-shrink-0">⚠</span>
+                        <span><strong class="text-gray-300">Not a substitute for professional research.</strong> This tool is designed to assist researchers in exploratory analysis. Results should be validated against primary sources before use in clinical or regulatory decisions.</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <div class="text-center pt-6 border-t border-white/[0.06]">
+            <p class="text-xs text-gray-700">
+                Pharma Pilot · Built with FastAPI, DuckDB, and HTMX
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

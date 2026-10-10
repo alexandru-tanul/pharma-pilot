@@ -15,15 +15,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str
-    POSTGRES_DB: str = "chatbot"
-
-    # DrugCentral Database
-    # --------------------
-    DRUGCENTRAL_HOST: str = "drugcentral_db"
-    DRUGCENTRAL_PORT: int = 5432
-    DRUGCENTRAL_USER: str = "postgres"
-    DRUGCENTRAL_PASSWORD: str
-    DRUGCENTRAL_DB: str = "drugcentral"
+    POSTGRES_DB: str = "app_data"
 
     @computed_field
     @property
@@ -33,14 +25,8 @@ class Settings(BaseSettings):
 
     @computed_field
     @property
-    def DRUGCENTRAL_DATABASE_URL(self) -> str:
-        """Build DrugCentral database URL."""
-        return f"postgres://{self.DRUGCENTRAL_USER}:{self.DRUGCENTRAL_PASSWORD}@{self.DRUGCENTRAL_HOST}:{self.DRUGCENTRAL_PORT}/{self.DRUGCENTRAL_DB}"
-
-    @computed_field
-    @property
     def TORTOISE_ORM(self) -> dict:
-        """TortoiseORM configuration."""
+        """TortoiseORM configuration for app_data (chat history)."""
         return {
             "connections": {
                 "default": {
@@ -51,20 +37,8 @@ class Settings(BaseSettings):
                         "user": self.POSTGRES_USER,
                         "password": self.POSTGRES_PASSWORD,
                         "database": self.POSTGRES_DB,
-                        "minsize": 5,  # Minimum pool size
-                        "maxsize": 20,  # Maximum pool size
-                    }
-                },
-                "drugcentral": {
-                    "engine": "tortoise.backends.asyncpg",
-                    "credentials": {
-                        "host": self.DRUGCENTRAL_HOST,
-                        "port": self.DRUGCENTRAL_PORT,
-                        "user": self.DRUGCENTRAL_USER,
-                        "password": self.DRUGCENTRAL_PASSWORD,
-                        "database": self.DRUGCENTRAL_DB,
-                        "minsize": 2,  # Minimum pool size
-                        "maxsize": 10,  # Maximum pool size
+                        "minsize": 5,
+                        "maxsize": 20,
                     }
                 }
             },
@@ -75,6 +49,10 @@ class Settings(BaseSettings):
                 }
             },
         }
+
+    # Parquet Data (DuckDB reads these at startup)
+    # --------------------
+    PARQUET_DIR: Path = Path(__file__).resolve().parent.parent / "data" / "parquet"
 
     # Directories
     # --------------------
