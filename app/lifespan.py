@@ -6,12 +6,14 @@ from fastapi import FastAPI
 from tortoise import Tortoise
 
 from app.config import settings
+from app import duckdb as duckdb_manager
+from app import data_sync
+from app.services.sse import chat_update_subscribers
 
 
 # Global state for PostgreSQL LISTEN/NOTIFY
 pg_listener_conn = None
 pg_listener_task = None
-chat_update_subscribers = {}  # {chat_id: [queue1, queue2, ...]}
 
 
 async def pg_listener():
@@ -33,17 +35,15 @@ async def pg_listener():
 
 
 async def handle_chat_update(connection, pid, channel, payload):
-    """Handle incoming chat update notifications."""
-    # Payload format: "chat_id"
+    """Handle incoming chat update notifications (structural changes only)."""
     chat_id = int(payload)
 
-    # Notify all subscribers for this chat
     if chat_id in chat_update_subscribers:
         for queue in chat_update_subscribers[chat_id]:
             try:
-                await queue.put({"chat_id": chat_id})
+                await queue.put({"type": "full", "chat_id": chat_id})
             except:
-                pass  # Subscriber might have disconnected
+                pass
 
 
 @asynccontextmanager
@@ -51,7 +51,12 @@ async def lifespan(app: FastAPI):
     """Lifespan context manager for startup and shutdown."""
     global pg_listener_task
 
-    # Startup
+    # Startup: DuckDB (Parquet data sources). Missing datasets are skipped;
+    # the /data page downloads them and triggers a reload.
+    duckdb_manager.init()
+    data_sync.set_reload_hook(duckdb_manager.reload)
+
+    # Startup: PostgreSQL (app_data)
     await Tortoise.init(config=settings.TORTOISE_ORM)
     try:
         await Tortoise.generate_schemas(safe=True)  # Create tables if they don't exist
@@ -74,3 +79,4 @@ async def lifespan(app: FastAPI):
             pass
 
     await Tortoise.close_connections()
+    duckdb_manager.close()

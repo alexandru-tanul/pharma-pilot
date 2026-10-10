@@ -1,86 +1,92 @@
-# Clinical Trials Scout
+# Pharma Pilot
 
-![Showcase](showcase.png)
+AI-powered pharmaceutical research assistant. Ask questions in plain English about clinical trials, drugs, targets, and protein biology; the app translates them into SQL against three biomedical databases, runs the queries locally, and streams back an answer with tables and sources.
 
-Chat with an LLM to search clinical trials from ClinicalTrials.gov AND query drug/target information from DrugCentral. Ask questions in plain English, get comprehensive results combining both databases.
+Live demo: https://clinical-trials-scout.alexandrutanul.com
 
 ## What it does
 
-- Ask questions about clinical trials ("Find breast cancer trials in California")
-- Query drug information ("What drugs target GPER?")
-- Get enriched results combining trial data with drug mechanisms, targets, and FDA approval status
-- Get live data from ClinicalTrials.gov API
-- Query the DrugCentral pharmaceutical database for drug/target information
-- Filter by condition, location, status, and phase automatically
-- Save your chat history
+- Answers questions such as "Find phase 3 trials for semaglutide", "What drugs target GPER?", or "Show adverse events reported for metformin"
+- Decides which database to query, or combines several in one answer
+- Streams the response while it is generated, with every SQL query shown and inspectable
+- Keeps chat history, lets you rate answers, and exports a conversation as a PDF report
 - Works on mobile
+
+## Data sources
+
+| Database | Content | Tables |
+|---|---|---|
+| ClinicalTrials.gov (AACT) | Registered clinical studies, interventions, outcomes, results | 49 |
+| DrugCentral | Approved drugs, targets, mechanisms, interactions, FAERS adverse events | 67 |
+| Pharos (NIH TCRD) | Protein targets, development levels, ligands, disease associations | 92 |
+
+The data is stored locally as Parquet files (about 4 GB) and queried in-process with DuckDB. The files are published monthly as GitHub releases of [scriptogre/biomedical-data](https://github.com/scriptogre/biomedical-data). The app downloads and updates them itself, see below.
 
 ## Built with
 
-- FastAPI + PostgreSQL
-- HTMX + Tailwind CSS
-- Anthropic Claude (via litellm)
-- Docker
+- FastAPI, Jinja2, HTMX, Tailwind CSS, Server-Sent Events
+- DuckDB over Parquet for the biomedical data
+- PostgreSQL (Tortoise ORM, Aerich migrations) for chat history
+- LiteLLM, so the model is configurable: Claude, Gemini, OpenAI, DeepSeek
+- WeasyPrint for PDF reports
+- Docker Compose, uv
 
 ## Run it
 
-1. Clone the repo
+Requirements: Docker with Compose, and [just](https://github.com/casey/just).
+
 ```bash
 git clone https://github.com/alexandru-tanul/clinical-trials-scout.git
 cd clinical-trials-scout
+just init          # creates .env, builds the image, downloads the datasets
 ```
 
-2. Copy the example env file
+Edit `.env` and set at least `SECRET_KEY`, `POSTGRES_PASSWORD`, and the API key for the model you chose in `MODEL`. Then:
+
 ```bash
-cp .env.example .env
+just up            # http://localhost:8000
 ```
 
-3. Add your Anthropic API key and database passwords to `.env`
+If you skipped the download step, the app opens its **Data** page on first visit, where each dataset can be downloaded with a progress bar. The chat becomes available as soon as the data is installed; no restart is needed.
 
-4. Download the DrugCentral database (required, ~500MB compressed)
+## Keeping the data current
+
+The **Data** page in the sidebar shows the installed version of each dataset next to the latest monthly release and offers an **Update** button. The same works from a terminal:
+
 ```bash
-just setup-drugcentral
+just data-status   # local vs latest versions
+just update-data   # update everything to the newest release
 ```
 
-5. Start it
-```bash
-docker compose up -d
-```
+Outside Docker: `python -m app.data_sync status|download|update`. Downloads are verified against the published SHA-256 checksum and installed atomically, so an interrupted update never leaves a half-replaced dataset.
 
-6. Open http://localhost:8000
+## Environment variables
 
-**Note:** First startup takes 2-3 minutes to initialize the DrugCentral database
-
-## Required env variables
-
-Put these in `.env`:
-- `ANTHROPIC_API_KEY` - Get it from Anthropic
-- `OPENAI_API_KEY` - Get it from OpenAI (optional, if using OpenAI models)
-- `SECRET_KEY` - Any random string for session management
-- `POSTGRES_PASSWORD` - Password for main database
-- `DRUGCENTRAL_PASSWORD` - Password for DrugCentral database
-
-## Optional env variables
-
-- `MODEL` - Which model to use (default: `claude-haiku-4-5`)
-- `DEBUG` - Turn on debug mode (default: `True`)
-
-## Example queries
-
-The LLM automatically decides whether to use ClinicalTrials.gov, DrugCentral, or both:
-
-- "Find trials for breast cancer" → Searches ClinicalTrials.gov only
-- "What drugs target GPER?" → Queries DrugCentral only
-- "Show me trials for GPER modulators" → Queries DrugCentral for GPER-targeting drugs, then searches trials
-- "Find trials for semaglutide and explain its mechanism" → Searches both databases and synthesizes results
+| Variable | Required | Purpose |
+|---|---|---|
+| `SECRET_KEY` | yes | Session signing |
+| `POSTGRES_PASSWORD` | yes | Chat history database |
+| `MODEL` | no | LiteLLM model name, default `gemini/gemini-3-flash-preview` |
+| `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `DEEPSEEK_API_KEY` | one | Key for the chosen model |
+| `DEBUG` | no | Template auto-reload, default `True` |
+| `PARQUET_DIR` | no | Where the datasets live, default `data/parquet` |
+| `GITHUB_TOKEN` | no | Raises the GitHub API rate limit for release checks |
 
 ## How it works
 
-Uses a state machine to track response generation:
-- `pending` → `analyzing` → `tool_calling` → `synthesizing` → `completed`
-- Status messages change based on how long each step takes
-- Everything runs async so you can use the app while responses generate
+1. A user message is saved and a background task starts generating the answer.
+2. The model receives the schema of the available views and decides which tool to call: `query_clinical_trials`, `query_drugcentral`, or `query_pharos`, each taking SQL.
+3. Queries run read-only in DuckDB, results are returned to the model, and the final answer is synthesised.
+4. Progress is streamed to the browser over SSE: structural changes go through PostgreSQL `LISTEN/NOTIFY`, text chunks go straight to the connected client.
+
+## Development
+
+```bash
+just makemigrations <name>   # new Aerich migration
+just migrate                 # apply migrations
+just logs                    # follow container logs
+```
 
 ## License
 
-Free to use for learning and personal projects.
+Free to use for learning and personal projects. The datasets keep the licenses of their publishers (AACT, DrugCentral, Pharos).

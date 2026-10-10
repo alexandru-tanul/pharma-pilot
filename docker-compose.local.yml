@@ -9,31 +9,25 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_USER: postgres
-      POSTGRES_DB: chatbot
+      POSTGRES_DB: app_data
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      DRUGCENTRAL_HOST: drugcentral_db
-      DRUGCENTRAL_PORT: 5432
-      DRUGCENTRAL_USER: postgres
-      DRUGCENTRAL_DB: drugcentral
-      DRUGCENTRAL_PASSWORD: ${DRUGCENTRAL_PASSWORD}
     volumes:
       - .:/code
+      - ./data/parquet:/code/data/parquet
     ports:
       - "8000:8000"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       postgres:
         condition: service_healthy
-      drugcentral_db:
-        condition: service_healthy
     restart: unless-stopped
 
   postgres:
-    image: postgres:17
+    image: postgres:17-bookworm
     env_file: .env
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_DB: chatbot
+      POSTGRES_DB: app_data
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     init: true
     command:
@@ -64,40 +58,12 @@ services:
       start_period: 5s
     restart: unless-stopped
 
-  drugcentral_db:
-    image: postgres:17
-    env_file: .env
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_DB: drugcentral
-      POSTGRES_PASSWORD: ${DRUGCENTRAL_PASSWORD}
-    init: true
-    command:
-      - "postgres"
-      - "-c"
-      - "shared_buffers=512MB"
-      - "-c"
-      - "maintenance_work_mem=256MB"
-    ports:
-      - "5433:5432"
-    volumes:
-      - ./data/drugcentral_data:/var/lib/postgresql/data
-      - ./data/01-drugcentral.dump.11012023.sql.gz:/docker-entrypoint-initdb.d/01-drugcentral.dump.sql.gz
-      - ./data/02-create_simplified_views.sql:/docker-entrypoint-initdb.d/02-create_simplified_views.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 30s
-    restart: unless-stopped
-
   pgweb:
-    image: sosedoff/pgweb
+    image: sosedoff/pgweb:0.15.0
     ports:
       - "8081:8081"
     environment:
-      PGWEB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/chatbot?sslmode=disable
+      PGWEB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/app_data?sslmode=disable
     depends_on:
       postgres:
         condition: service_healthy

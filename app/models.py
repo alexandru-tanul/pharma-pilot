@@ -86,6 +86,9 @@ class Message(Model):
     # Token usage (from LLM API response.usage)
     usage = fields.JSONField(null=True)  # {"prompt_tokens": int, "completion_tokens": int, "total_tokens": int}
 
+    # User feedback on assistant responses
+    feedback = fields.CharField(max_length=10, null=True)  # 'positive', 'negative', or null
+
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
@@ -98,8 +101,11 @@ class Message(Model):
         return f"{self.role}: {self.content[:30] if self.content else 'tool_calls'}..."
 
     def as_llm_dict(self) -> dict:
-        """Convert to LiteLLM/OpenAI chat completion message format."""
-        msg = {"role": self.role}
+        """Convert to LiteLLM/OpenAI chat completion message format.
+
+        Includes `msg_id` for template use (stripped before LLM API calls).
+        """
+        msg = {"role": self.role, "msg_id": self.id}
 
         if self.content is not None:
             msg["content"] = self.content
@@ -112,6 +118,9 @@ class Message(Model):
 
         if self.name:
             msg["name"] = self.name
+
+        if self.feedback:
+            msg["feedback"] = self.feedback
 
         return msg
 

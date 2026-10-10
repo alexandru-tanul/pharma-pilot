@@ -1,7 +1,7 @@
 [project]
-name = "clinical-trials-scout"
+name = "pharma-pilot"
 version = "0.1.0"
-description = "Clinical Trial Scout - FastAPI chatbot with Anthropic Claude and ClinicalTrials.gov API integration"
+description = "Pharma Pilot - AI-powered pharmaceutical research assistant with clinical trials, drug targets, and protein biology"
 requires-python = ">=3.10"
 dependencies = [
     "fastapi[standard]>=0.121.0",
@@ -17,6 +17,8 @@ dependencies = [
     "httpx[http2]>=0.28.1",
     "markdown2>=2.5.4",
     "itsdangerous>=2.1.0",
+    "duckdb>=1.3.0",
+    "weasyprint>=63.0",
 ]
 
 [tool.aerich]

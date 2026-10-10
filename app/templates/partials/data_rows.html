@@ -1,0 +1,89 @@
+{# Dataset rows. Re-polled every 2 s while a download job is active. #}
+<div
+    id="data-rows"
+    class="flex flex-col gap-3"
+    {% if status.any_active %}hx-get="/data/status" hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}
+>
+    {% for d in status.datasets %}
+    {% set job = d.job %}
+    <div class="gradient-border rounded-xl p-5 flex flex-col gap-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-white">
+                        {% if d.name == "drugcentral" %}DrugCentral
+                        {% elif d.name == "clinicaltrials" %}ClinicalTrials.gov (AACT)
+                        {% else %}Pharos (NIH TCRD){% endif %}
+                    </span>
+                    {% if job and job.active %}
+                        <span class="text-[11px] uppercase tracking-widest text-amber-400">{{ job.state }}</span>
+                    {% elif not d.present %}
+                        <span class="text-[11px] uppercase tracking-widest text-red-400">missing</span>
+                    {% elif d.update_available %}
+                        <span class="text-[11px] uppercase tracking-widest text-blue-400">update available</span>
+                    {% else %}
+                        <span class="text-[11px] uppercase tracking-widest text-emerald-400">up to date</span>
+                    {% endif %}
+                </div>
+                <div class="text-xs text-gray-500 mt-1">
+                    {% if d.present %}
+                        {{ d.file_count }} tables, {{ d.size_bytes|human_size }} on disk,
+                        version {{ d.local_date or "unknown" }}
+                    {% else %}
+                        Not downloaded yet
+                    {% endif %}
+                    · latest release {{ d.latest_date or "unknown" }}{% if d.latest_size %} ({{ d.latest_size|human_size }} download){% endif %}
+                </div>
+            </div>
+
+            {% if job and job.active %}
+                <button disabled class="px-4 py-2 rounded-lg text-sm bg-white/[0.04] border border-white/[0.06] text-gray-500 cursor-wait">
+                    Working…
+                </button>
+            {% elif d.latest_tag %}
+                <button
+                    hx-post="/data/{{ d.name }}/update"
+                    hx-target="#data-rows"
+                    hx-swap="outerHTML"
+                    class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300
+                        {% if not d.present or d.update_available %}
+                        bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40 text-emerald-400
+                        {% else %}
+                        bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] text-gray-400
+                        {% endif %}"
+                >
+                    {% if not d.present %}Download{% elif d.update_available %}Update{% else %}Re-download{% endif %}
+                </button>
+            {% else %}
+                <button disabled class="px-4 py-2 rounded-lg text-sm bg-white/[0.04] border border-white/[0.06] text-gray-600">
+                    Unavailable
+                </button>
+            {% endif %}
+        </div>
+
+        {% if job %}
+            {% if job.active %}
+            <div>
+                <div class="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                    <div class="h-full bg-emerald-500 transition-all duration-500" style="width: {{ job.percent }}%"></div>
+                </div>
+                <div class="text-xs text-gray-500 mt-1.5">
+                    {{ job.message }}
+                    {% if job.state == "downloading" %} · {{ job.done_bytes|human_size }} / {{ job.total_bytes|human_size }} ({{ job.percent }}%){% endif %}
+                </div>
+            </div>
+            {% elif job.state == "error" %}
+            <div class="text-xs text-red-400">Failed: {{ job.message }}</div>
+            {% elif job.state == "done" %}
+            <div class="text-xs text-emerald-400">Installed and loaded.</div>
+            {% endif %}
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    {% if status.remote_error %}
+    <div class="text-xs text-amber-400">
+        Could not reach GitHub to check for new releases: {{ status.remote_error }}
+    </div>
+    {% endif %}
+</div>

@@ -1,0 +1,407 @@
+/* ============================================================
+   Pharma Pilot — PDF Report Stylesheet (Dark Mode)
+   Designed for WeasyPrint on A4. Optimised for readability.
+
+   Key design principles (from A List Apart, CSE Science Editor):
+   - Body text 11pt, line-height 1.7 for comfortable reading
+   - Line length 45-90 chars (A4 minus 2.5cm margins achieves this)
+   - Tables: minimal rules, left-align text, right-align numbers
+   - Generous whitespace between sections
+   - Show the data, remove everything else
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ---- Page Setup ---- */
+@page {
+    size: A4;
+    margin: 2.5cm 2.5cm 3cm 2.5cm;
+    background: #0a0a0a;
+
+    @bottom-center {
+        content: "Pharma Pilot — AI-assisted research report";
+        font-family: 'Inter', 'Liberation Sans', sans-serif;
+        font-size: 7.5pt;
+        color: #374151;
+    }
+
+    @bottom-right {
+        content: counter(page) " / " counter(pages);
+        font-family: 'Inter', 'Liberation Sans', sans-serif;
+        font-size: 7.5pt;
+        color: #374151;
+    }
+}
+
+@page :first {
+    margin-top: 2cm;
+}
+
+/* ---- Base ---- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Liberation Sans', sans-serif;
+    font-size: 11pt;
+    line-height: 1.7;
+    color: #d1d5db;
+    background: #0a0a0a;
+    font-weight: 400;
+}
+
+/* ---- Report Header ---- */
+.report-header {
+    text-align: center;
+    padding-bottom: 24pt;
+    margin-bottom: 32pt;
+    border-bottom: 1.5pt solid #10b981;
+}
+
+.report-header .logo-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8pt;
+    margin-bottom: 20pt;
+}
+
+.report-header .logo-icon {
+    width: 26pt;
+    height: 26pt;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 6pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 13pt;
+    font-weight: 700;
+}
+
+.report-header .logo-text {
+    font-size: 13pt;
+    font-weight: 600;
+    color: #e5e7eb;
+    letter-spacing: -0.01em;
+}
+
+.report-header h1 {
+    font-size: 17pt;
+    font-weight: 700;
+    color: #f9fafb;
+    margin-bottom: 10pt;
+    line-height: 1.4;
+    max-width: 85%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.report-header .subtitle {
+    font-size: 9pt;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.report-header .subtitle span {
+    display: inline-block;
+}
+
+.report-header .subtitle .separator {
+    margin: 0 6pt;
+}
+
+/* ---- Research Question ---- */
+.research-question {
+    margin-bottom: 28pt;
+}
+
+.research-question h2 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: #f3f4f6;
+    margin-bottom: 8pt;
+    padding-bottom: 6pt;
+    border-bottom: 1pt solid #1f2937;
+}
+
+.research-question p {
+    font-size: 12pt;
+    font-weight: 500;
+    color: #e5e7eb;
+    line-height: 1.6;
+    border-left: 3pt solid #10b981;
+    padding-left: 14pt;
+}
+
+/* ---- Findings (rendered markdown) ---- */
+.findings-block {
+    margin-bottom: 20pt;
+}
+
+.findings-block h1 {
+    font-size: 15pt;
+    font-weight: 700;
+    color: #f9fafb;
+    margin-top: 28pt;
+    margin-bottom: 10pt;
+    line-height: 1.4;
+}
+
+.findings-block h1:first-child {
+    margin-top: 0;
+}
+
+.findings-block h2 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: #f3f4f6;
+    margin-top: 24pt;
+    margin-bottom: 8pt;
+    line-height: 1.4;
+}
+
+.findings-block h3 {
+    font-size: 11.5pt;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-top: 18pt;
+    margin-bottom: 6pt;
+    line-height: 1.4;
+}
+
+.findings-block p {
+    margin-bottom: 10pt;
+    line-height: 1.7;
+    color: #d1d5db;
+}
+
+.findings-block strong {
+    font-weight: 600;
+    color: #f9fafb;
+}
+
+.findings-block em {
+    font-style: italic;
+    color: #e5e7eb;
+}
+
+.findings-block a {
+    color: #34d399;
+    text-decoration: underline;
+    text-decoration-color: rgba(52, 211, 153, 0.4);
+}
+
+/* ---- Lists ---- */
+.findings-block ul,
+.findings-block ol {
+    margin-bottom: 10pt;
+    padding-left: 22pt;
+}
+
+.findings-block li {
+    margin-bottom: 4pt;
+    line-height: 1.65;
+    color: #d1d5db;
+}
+
+/* ---- Tables ----
+   Following A List Apart and CSE Science Editor guidelines:
+   - Minimal horizontal rules only (top, below header, bottom)
+   - No vertical rules
+   - No zebra stripes or background fills
+   - Left-align text, right-align numbers
+   - Generous cell padding for scannability
+   -------------------------------------------------------- */
+.findings-block table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8pt;
+    margin-bottom: 16pt;
+    font-size: 9pt;
+    line-height: 1.5;
+    page-break-inside: auto;
+}
+
+.findings-block thead {
+    display: table-header-group;
+}
+
+.findings-block th {
+    border-top: 1.5pt solid #4b5563;
+    border-bottom: 1pt solid #374151;
+    padding: 8pt 10pt;
+    text-align: left;
+    font-weight: 600;
+    font-size: 8.5pt;
+    color: #9ca3af;
+    letter-spacing: 0.02em;
+}
+
+.findings-block td {
+    border-bottom: 0.5pt solid #1f2937;
+    padding: 7pt 10pt;
+    color: #d1d5db;
+    vertical-align: top;
+    line-height: 1.5;
+}
+
+.findings-block tr:last-child td {
+    border-bottom: 1.5pt solid #4b5563;
+}
+
+.findings-block tr {
+    page-break-inside: avoid;
+}
+
+/* ---- Code ---- */
+.findings-block code {
+    font-family: 'Courier New', monospace;
+    font-size: 9pt;
+    background: #161616;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    color: #34d399;
+}
+
+.findings-block pre {
+    background: #111111;
+    border-left: 2pt solid #1f2937;
+    border-radius: 0;
+    padding: 12pt 16pt;
+    margin-bottom: 12pt;
+    font-family: 'Courier New', monospace;
+    font-size: 8.5pt;
+    line-height: 1.55;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    color: #d1d5db;
+}
+
+.findings-block pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+}
+
+/* ---- Blockquotes ---- */
+.findings-block blockquote {
+    border-left: 2pt solid #374151;
+    padding-left: 14pt;
+    margin: 10pt 0;
+    font-style: italic;
+    color: #9ca3af;
+}
+
+/* ---- Data Sources Section ---- */
+.sources-section {
+    margin-top: 36pt;
+    padding-top: 20pt;
+    border-top: 1pt solid #1f2937;
+}
+
+.sources-section h2 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: #f3f4f6;
+    margin-bottom: 6pt;
+}
+
+.sources-section > p {
+    font-size: 10pt;
+    color: #6b7280;
+    margin-bottom: 16pt;
+    line-height: 1.6;
+}
+
+.source-group {
+    margin-bottom: 14pt;
+}
+
+.source-group h3 {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: #10b981;
+    margin-bottom: 4pt;
+}
+
+.source-group ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.source-group li {
+    font-size: 9.5pt;
+    color: #9ca3af;
+    line-height: 1.55;
+    margin-bottom: 3pt;
+    padding-left: 12pt;
+    position: relative;
+}
+
+.source-group li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: #374151;
+}
+
+/* ---- Conversation Round ---- */
+.conversation-round {
+    margin-bottom: 12pt;
+}
+
+.round-separator {
+    border-top: 1pt dashed #1f2937;
+    margin: 28pt 0;
+}
+
+.round-queries {
+    margin-top: 12pt;
+    padding: 10pt 14pt;
+    background: #111111;
+    border-left: 2pt solid #10b981;
+    border-radius: 0 4pt 4pt 0;
+}
+
+.round-queries-label {
+    font-size: 9pt;
+    color: #6b7280;
+    margin-bottom: 6pt;
+    font-weight: 500;
+}
+
+.round-queries ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.round-queries li {
+    font-size: 9pt;
+    color: #9ca3af;
+    line-height: 1.55;
+    margin-bottom: 3pt;
+    padding-left: 12pt;
+    position: relative;
+}
+
+.round-queries li::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: #10b981;
+}
+
+.round-queries li strong {
+    color: #d1d5db;
+    font-weight: 600;
+}
+
+/* ---- Utility ---- */
+.avoid-break {
+    page-break-inside: avoid;
+}

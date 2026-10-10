@@ -3,80 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Clinical Trials Scout{% endblock title %}</title>
+    <title>{% block title %}Pharma Pilot{% endblock title %}</title>
 
-    <!-- HTMX (CDN) -->
+    <!-- HTMX + Idiomorph (CDN) -->
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-
-    <!-- HTMX Extensions -->
-    <script src="https://unpkg.com/idiomorph@0.3.0/dist/idiomorph-ext.min.js"></script>
-    <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
+    <script src="https://unpkg.com/idiomorph@0.3.0/dist/idiomorph.min.js"></script>
 
     <!-- Iconify (CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js"></script>
 
     <!-- Tailwind CSS Play CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+
+        /* Fade-in on page load */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out both; }
+        .animate-fade-in-delay-1 { animation: fadeIn 0.5s ease-out 0.1s both; }
+        .animate-fade-in-delay-2 { animation: fadeIn 0.5s ease-out 0.2s both; }
+        .animate-fade-in-delay-3 { animation: fadeIn 0.5s ease-out 0.3s both; }
+
+        /* Subtle glow for accent elements */
+        .glow-emerald { box-shadow: 0 0 10px rgba(52, 211, 153, 0.08); }
+        .glow-blue { box-shadow: 0 0 6px rgba(96, 165, 250, 0.07); }
+        .glow-purple { box-shadow: 0 0 6px rgba(192, 132, 252, 0.07); }
+        .glow-amber { box-shadow: 0 0 6px rgba(251, 191, 36, 0.07); }
+
+        /* Gradient border effect */
+        .gradient-border {
+            position: relative;
+            background: #0a0a0a;
+        }
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(52,211,153,0.3), rgba(96,165,250,0.1), rgba(192,132,252,0.1));
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        /* Sidebar slide-in */
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .sidebar-animate { animation: slideInLeft 0.4s ease-out both; }
+
+        /* Scrollbar hide */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+
+    </style>
 </head>
-<body class="relative flex flex-col md:flex-row p-0 md:p-8 text-neutral-300 bg-neutral-900 h-screen gap-0 md:gap-4">
+<body class="relative flex flex-col md:flex-row text-gray-300 bg-[#0a0a0a] h-screen overflow-hidden">
 
 <div class="group flex">
 <!-- Hidden checkbox for hamburger menu toggle -->
 <input type="checkbox" id="menu-toggle" class="peer hidden" autocomplete="off">
 
 <!-- Hamburger menu button (mobile only) -->
-<label for="menu-toggle" class="fixed top-4 left-4 z-50 md:hidden cursor-pointer bg-neutral-800 hover:bg-neutral-700 p-2.5 rounded-xl transition">
-    <!-- Hamburger icon (shown when menu closed) -->
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden group-has-[:not(:checked)]:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+<label for="menu-toggle" class="fixed top-4 left-4 z-50 md:hidden cursor-pointer bg-[#141414] border border-white/[0.06] hover:border-emerald-500/50 p-2.5 rounded-lg transition-all duration-300">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden group-has-[:not(:checked)]:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16" />
     </svg>
-    <!-- X icon (shown when menu open) -->
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-has-[:not(:checked)]:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-has-[:not(:checked)]:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
     </svg>
 </label>
 
-<!-- Backdrop overlay (mobile only, shown when menu is open) -->
-<label for="menu-toggle" class="peer-not-checked:hidden max-md:block hidden fixed inset-0 bg-black/50 z-30 md:hidden cursor-pointer"></label>
+<!-- Backdrop overlay (mobile only) -->
+<label for="menu-toggle" class="peer-not-checked:hidden max-md:block hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-30 md:hidden cursor-pointer"></label>
 
-<!-- Sidebar Container -->
-<div class="select-none fixed md:relative top-0 left-0 md:top-auto md:left-auto h-full md:h-auto w-64 flex-shrink-0 flex flex-col gap-3 bg-neutral-900 md:bg-transparent pt-18 md:pt-0 p-4 md:p-0 z-40 max-md:peer-not-checked:-translate-x-full max-md:transition-transform max-md:duration-300 max-md:ease-in-out">
-    <!-- New Chat Button -->
-    <a
-        href="/"
-        hx-boost="true"
-        class="flex items-center justify-center gap-2 w-full bg-neutral-800/50 hover:bg-neutral-700/70 text-white px-4 py-3 rounded-xl transition"
-    >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        New Chat
-    </a>
+<!-- Sidebar -->
+<div class="sidebar-animate select-none fixed md:relative top-0 left-0 md:top-auto md:left-auto h-full md:h-auto w-64 flex-shrink-0 flex flex-col bg-[#0a0a0a] border-r border-white/[0.06] pt-16 md:pt-0 z-40 max-md:peer-not-checked:-translate-x-full max-md:transition-transform max-md:duration-300 max-md:ease-in-out">
 
-    <!-- Chat History Sidebar -->
-    <div class="flex-1 bg-neutral-800/30 rounded-xl p-4 overflow-y-auto max-h-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        <div class="mb-4">
-            <h2 class="text-lg font-semibold mb-3">Chat History</h2>
+    <!-- Logo area -->
+    <div class="px-5 py-5 border-b border-white/[0.06]">
+        <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
+                <iconify-icon icon="mdi:flask-outline" class="text-white text-base"></iconify-icon>
+            </div>
+            <span class="font-semibold text-white text-sm tracking-tight">Pharma Pilot</span>
+        </div>
+        <a
+            href="/"
+            hx-boost="true"
+            class="flex items-center justify-center gap-2 w-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40 text-emerald-400 px-4 py-2.5 rounded-lg transition-all duration-300 text-sm font-medium"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            New Chat
+        </a>
+        <a
+            href="/data"
+            hx-boost="true"
+            class="flex items-center justify-center gap-2 w-full text-gray-600 hover:text-gray-300 hover:bg-white/[0.04] px-4 py-2 rounded-lg transition-all duration-300 text-sm mt-2"
+        >
+            <iconify-icon icon="mdi:database-cog-outline" class="text-base"></iconify-icon>
+            Data
+        </a>
+        <a
+            href="/about"
+            hx-boost="true"
+            class="flex items-center justify-center gap-2 w-full text-gray-600 hover:text-gray-300 hover:bg-white/[0.04] px-4 py-2 rounded-lg transition-all duration-300 text-sm mt-1"
+        >
+            <iconify-icon icon="mdi:information-outline" class="text-base"></iconify-icon>
+            About
+        </a>
+    </div>
+
+    <!-- Chat History -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="px-4 pt-4 pb-2">
+            <h2 class="text-[11px] font-semibold uppercase tracking-widest text-gray-600 mb-3">History</h2>
             <input
                 type="text"
                 placeholder="Search chats..."
-                class="w-full bg-neutral-800/50 border border-neutral-700/50 rounded-xl px-3 py-2 text-sm outline-none focus:border-neutral-500 transition"
+                class="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-600 outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all duration-300"
                 hx-get="/chat"
                 hx-trigger="keyup changed delay:300ms"
                 hx-target="#chat-list"
                 name="search"
             >
         </div>
-        <div id="chat-list" hx-get="/chat" hx-trigger="load, refreshChats from:body">
+        <div id="chat-list" class="flex-1 overflow-y-auto px-2 pb-4 no-scrollbar" hx-get="/chat" hx-trigger="load, refreshChats from:body">
             {% block chat_list %}
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-0.5">
                 {% for chat in chats %}
-                    <div class="group flex items-center hover:bg-neutral-800/60 rounded-xl transition">
+                    <div class="group flex items-center hover:bg-white/[0.04] rounded-lg transition-all duration-200">
                         <a
                             href="/chats/{{ chat.id }}"
                             hx-boost="true"
                             hx-trigger="click"
-                            class="flex-1 text-left text-sm truncate cursor-pointer hover:text-white p-3"
+                            class="flex-1 text-left text-sm truncate cursor-pointer text-gray-500 hover:text-gray-200 px-3 py-2.5 transition-colors duration-200"
                         >
                             {{ chat.title|default("New Chat") }}
                         </a>
@@ -84,16 +157,16 @@
                             hx-post="/chats/{{ chat.id }}/delete"
                             hx-target="closest div"
                             hx-swap="outerHTML swap:0.5s"
-                            class="opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-red-400 transition p-3 flex-shrink-0"
+                            class="opacity-0 group-hover:opacity-100 text-gray-700 hover:text-red-400 transition-all duration-200 px-2 py-2 flex-shrink-0"
                             onclick="return confirm('Delete this chat?')"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
                     </div>
                 {% else %}
-                    <p class="text-neutral-400 text-sm text-center py-4">No chats yet</p>
+                    <p class="text-gray-700 text-sm text-center py-8">No chats yet</p>
                 {% endfor %}
             </div>
             {% endblock %}
@@ -103,7 +176,7 @@
 </div>
 
 <!-- Main Content Area -->
-<div class="flex-1 py-4 md:py-0 px-4 flex flex-col min-h-0">
+<div class="flex-1 flex flex-col min-h-0">
 {% block content %}
 {% endblock content %}
 </div>

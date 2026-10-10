@@ -1,0 +1,32 @@
+<div id="feedback-{{ msg.msg_id if msg.msg_id is defined else msg.id }}" class="flex items-center gap-1 mt-2">
+    <button
+        hx-post="/messages/{{ msg.msg_id if msg.msg_id is defined else msg.id }}/feedback"
+        hx-vals='{"feedback": "positive"}'
+        hx-target="#feedback-{{ msg.msg_id if msg.msg_id is defined else msg.id }}"
+        hx-swap="outerHTML"
+        class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300
+            {% if (msg.feedback if msg.feedback is defined else none) == 'positive' %}
+                text-emerald-400 bg-emerald-500/15 border border-emerald-500/30
+            {% else %}
+                text-gray-600 hover:text-emerald-400 bg-white/[0.02] hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20
+            {% endif %}"
+        title="Helpful"
+    >
+        <iconify-icon icon="mdi:thumb-up-outline" width="16" height="16"></iconify-icon>
+    </button>
+    <button
+        hx-post="/messages/{{ msg.msg_id if msg.msg_id is defined else msg.id }}/feedback"
+        hx-vals='{"feedback": "negative"}'
+        hx-target="#feedback-{{ msg.msg_id if msg.msg_id is defined else msg.id }}"
+        hx-swap="outerHTML"
+        class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300
+            {% if (msg.feedback if msg.feedback is defined else none) == 'negative' %}
+                text-red-400 bg-red-500/15 border border-red-500/30
+            {% else %}
+                text-gray-600 hover:text-red-400 bg-white/[0.02] hover:bg-red-500/10 border border-transparent hover:border-red-500/20
+            {% endif %}"
+        title="Not helpful"
+    >
+        <iconify-icon icon="mdi:thumb-down-outline" width="16" height="16"></iconify-icon>
+    </button>
+</div>
