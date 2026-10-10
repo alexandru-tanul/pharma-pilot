@@ -7,10 +7,19 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_USER: postgres
-      POSTGRES_DB: chatbot
+      POSTGRES_DB: app_data
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # API Keys
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      # LLM Configuration
+      MODEL: ${MODEL:-claude-haiku-4-5}
+      # App Settings
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG:-False}
     volumes:
       - .:/code
+      - ./data/parquet:/code/data/parquet
       - static_volume:/code/app/staticfiles
     init: true
     tty: true
@@ -21,12 +30,12 @@ services:
     restart: always
 
   postgres:
-    image: postgres:17
+    image: postgres:17-bookworm
     expose: [5432]
     env_file: .env
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_DB: chatbot
+      POSTGRES_DB: app_data
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     init: true
     command:
@@ -52,7 +61,7 @@ services:
     image: sosedoff/pgweb
     expose: [8081]
     environment:
-      PGWEB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/chatbot?sslmode=disable
+      PGWEB_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/app_data?sslmode=disable
     depends_on:
       postgres:
         condition: service_healthy

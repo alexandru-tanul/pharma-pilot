@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str
-    POSTGRES_DB: str = "chatbot"
+    POSTGRES_DB: str = "app_data"
 
     @computed_field
     @property
@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     @computed_field
     @property
     def TORTOISE_ORM(self) -> dict:
-        """TortoiseORM configuration."""
+        """TortoiseORM configuration for app_data (chat history)."""
         return {
             "connections": {
                 "default": {
@@ -37,8 +37,8 @@ class Settings(BaseSettings):
                         "user": self.POSTGRES_USER,
                         "password": self.POSTGRES_PASSWORD,
                         "database": self.POSTGRES_DB,
-                        "minsize": 5,  # Minimum pool size
-                        "maxsize": 20,  # Maximum pool size
+                        "minsize": 5,
+                        "maxsize": 20,
                     }
                 }
             },
@@ -49,6 +49,10 @@ class Settings(BaseSettings):
                 }
             },
         }
+
+    # Parquet Data (DuckDB reads these at startup)
+    # --------------------
+    PARQUET_DIR: Path = Path(__file__).resolve().parent.parent / "data" / "parquet"
 
     # Directories
     # --------------------
@@ -61,15 +65,8 @@ class Settings(BaseSettings):
 
     # LLM Configuration (using LiteLLM)
     # --------------------
-    MODEL: str = "claude-haiku-4-5"  # For tool calling (search decision)
-    SYNTHESIS_MODEL: str = "claude-haiku-4-5"  # For result synthesis (supports thinking)
-
-    # Extended Thinking Mode (for Claude models that support it)
-    # Supported models: claude-sonnet-4-5, claude-opus-4-5, etc.
-    # --------------------
-    ENABLE_THINKING: bool = False  # Set to True to enable extended thinking
-    THINKING_BUDGET_TOKENS: int = 10000  # Tokens Claude can use for thinking (1024-32000)
-    SHOW_THINKING: bool = True  # Show thinking content to users
+    MODEL: str = "gemini/gemini-3-flash-preview"  # For tool calling and response generation
+    GEMINI_API_KEY: str = ""  # Set in .env
 
     # Session
     # --------------------

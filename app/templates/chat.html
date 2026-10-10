@@ -2,166 +2,260 @@
 
 {% block content %}
     <div id="chat-page-container" class="flex-1 flex flex-col min-h-0">
-        <!-- Main Chat Area -->
         <div class="flex-1 flex flex-col items-center min-h-0">
-            <div id="chat-container" class="w-full max-w-5xl flex-1 flex flex-col gap-4 bg-neutral-900 rounded-t-3xl px-4 py-8 overflow-y-auto overflow-x-hidden min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden mask-y-from-95%"
-                 hx-on:load="this.scrollTop = this.scrollHeight"
-            >
-                    <!-- Messages list -->
-                    <div id="messages-list" class="contents">
-                        {% for msg in chat_history %}
-                            {% if msg.role == "user" %}
-                                <div class="chat-message flex justify-end mb-4 last:mb-0">
-                                    <div class="bg-neutral-800 text-neutral-100 px-5 py-2 rounded-l-full rounded-tr-full max-w-xs">
-                                        {{ msg.content }}
-                                    </div>
+            <div id="chat-container"
+                 class="w-full max-w-6xl flex-1 flex flex-col-reverse px-6 md:px-12 lg:px-20 py-6 overflow-y-auto overflow-x-hidden min-h-0 no-scrollbar">
+                <div id="messages-list" class="flex flex-col gap-6">
+                    {% for msg in chat_history %}
+                        {% set prev_role = chat_history[loop.index0 - 1].role if loop.index0 > 0 else '' %}
+                        {% if msg.role == "user" %}
+                            <div id="msg-{{ msg.msg_id }}" class="chat-message flex justify-end">
+                                <div class="bg-white/[0.05] border border-white/[0.08] text-gray-200 px-5 py-3 rounded-2xl rounded-br-sm max-w-2xl break-words">
+                                    {{ msg.content }}
                                 </div>
-                            {% else %}
-                                <div class="chat-message flex justify-start mb-8 last:mb-0">
-                                    <div class="prose prose-invert max-w-none min-w-0
-                                        [&_p]:mb-4 [&_p]:leading-relaxed [&_p:last-child]:mb-0
-                                        [&_ul]:mb-4 [&_ul]:space-y-2 [&_ul]:pl-5
-                                        [&_ol]:mb-4 [&_ol]:space-y-2 [&_ol]:pl-5
-                                        [&_li]:leading-relaxed
-                                        [&_h1]:mb-4 [&_h1]:mt-6 [&_h1:first-child]:mt-0
-                                        [&_h2]:mb-3 [&_h2]:mt-5 [&_h2:first-child]:mt-0
-                                        [&_h3]:mb-2 [&_h3]:mt-4 [&_h3:first-child]:mt-0
-                                        [&_pre]:mb-4 [&_pre]:p-4 [&_pre]:bg-neutral-800/70 [&_pre]:rounded-lg
-                                        [&_code]:bg-neutral-800/70 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm
-                                        [&_table]:block [&_table]:overflow-x-auto [&_table]:mb-4 [&_table]:min-w-full [&_table]:border-collapse [&_table]:bg-neutral-800/50 [&_table]:rounded-lg
-                                        [&_th]:bg-neutral-800/70 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:font-medium [&_th]:text-neutral-300 [&_th]:border-b [&_th]:border-neutral-700/50
-                                        [&_td]:px-4 [&_td]:py-3 [&_td]:border-b [&_td]:border-neutral-700/50
-                                        [&_tr:last-child_td]:border-b-0 [&_tr:hover]:bg-neutral-700/30
-                                        [&_a]:text-blue-400 [&_a]:underline [&_a:hover]:text-blue-300
-                                        [&_blockquote]:border-l-4 [&_blockquote]:border-neutral-600 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4">
-                                        {{ msg.content|safe }}
-                                    </div>
+                            </div>
+                        {% elif msg.role == "assistant" %}
+                            <div id="msg-{{ msg.msg_id }}" class="chat-message">
+                                {% if msg.content %}
+                                <div id="msg-content-{{ msg.msg_id }}" class="prose prose-invert max-w-none min-w-0 overflow-x-hidden
+                                    [&_p]:mb-3 [&_p]:leading-relaxed [&_p]:text-gray-300 [&_p:last-child]:mb-0
+                                    [&_ul]:mb-3 [&_ul]:space-y-1.5 [&_ul]:pl-5
+                                    [&_ol]:mb-3 [&_ol]:space-y-1.5 [&_ol]:pl-5
+                                    [&_li]:leading-relaxed [&_li]:text-gray-300
+                                    [&_h1]:mb-3 [&_h1]:mt-5 [&_h1:first-child]:mt-0 [&_h1]:text-white [&_h1]:font-semibold
+                                    [&_h2]:mb-2 [&_h2]:mt-4 [&_h2:first-child]:mt-0 [&_h2]:text-white [&_h2]:font-semibold
+                                    [&_h3]:mb-2 [&_h3]:mt-3 [&_h3:first-child]:mt-0 [&_h3]:text-white [&_h3]:font-medium
+                                    [&_strong]:text-white [&_strong]:font-semibold
+                                    [&_pre]:mb-3 [&_pre]:p-4 [&_pre]:bg-[#0f0f0f] [&_pre]:border [&_pre]:border-white/[0.06] [&_pre]:rounded-xl
+                                    [&_code]:bg-white/[0.06] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-md [&_code]:text-sm [&_code]:text-emerald-400 [&_code]:font-mono
+                                    [&_table]:mb-4 [&_table]:w-full [&_table]:table [&_table]:table-fixed [&_table]:border-collapse [&_table]:bg-[#0f0f0f] [&_table]:border [&_table]:border-white/[0.06] [&_table]:rounded-xl [&_table]:text-sm [&_table]:overflow-hidden
+                                    [&_th]:bg-white/[0.03] [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:font-medium [&_th]:text-gray-400 [&_th]:border-b [&_th]:border-white/[0.06] [&_th]:text-xs [&_th]:uppercase [&_th]:tracking-wider [&_th]:overflow-hidden [&_th]:text-ellipsis
+                                    [&_td]:px-4 [&_td]:py-3 [&_td]:border-b [&_td]:border-white/[0.04] [&_td]:text-gray-300 [&_td]:overflow-hidden [&_td]:text-ellipsis
+                                    [&_tr:last-child_td]:border-b-0 [&_tr:hover]:bg-white/[0.02]
+                                    [&_a]:text-emerald-400 [&_a]:no-underline [&_a]:hover:underline [&_a]:decoration-emerald-400/40
+                                    [&_blockquote]:border-l-2 [&_blockquote]:border-emerald-500/30 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-3 [&_blockquote]:text-gray-500">
+                                    {{ msg.content|md|safe }}
                                 </div>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-            </div>
+                                <!-- Feedback buttons -->
+                                <div id="feedback-{{ msg.msg_id }}" class="flex items-center gap-1 mt-2">
+                                    <button
+                                        hx-post="/messages/{{ msg.msg_id }}/feedback"
+                                        hx-vals='{"feedback": "positive"}'
+                                        hx-target="#feedback-{{ msg.msg_id }}"
+                                        hx-swap="outerHTML"
+                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300
+                                            {% if msg.feedback == 'positive' %}
+                                                text-emerald-400 bg-emerald-500/15 border border-emerald-500/30
+                                            {% else %}
+                                                text-gray-600 hover:text-emerald-400 bg-white/[0.02] hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20
+                                            {% endif %}"
+                                        title="Helpful"
+                                    >
+                                        <iconify-icon icon="mdi:thumb-up-outline" width="16" height="16"></iconify-icon>
+                                    </button>
+                                    <button
+                                        hx-post="/messages/{{ msg.msg_id }}/feedback"
+                                        hx-vals='{"feedback": "negative"}'
+                                        hx-target="#feedback-{{ msg.msg_id }}"
+                                        hx-swap="outerHTML"
+                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300
+                                            {% if msg.feedback == 'negative' %}
+                                                text-red-400 bg-red-500/15 border border-red-500/30
+                                            {% else %}
+                                                text-gray-600 hover:text-red-400 bg-white/[0.02] hover:bg-red-500/10 border border-transparent hover:border-red-500/20
+                                            {% endif %}"
+                                        title="Not helpful"
+                                    >
+                                        <iconify-icon icon="mdi:thumb-down-outline" width="16" height="16"></iconify-icon>
+                                    </button>
+                                </div>
+                                {% elif not msg.tool_calls %}
+                                    <div class="flex items-center gap-3 px-1 py-2">
+                                        <div class="flex gap-1.5">
+                                            <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                                            <div class="w-2 h-2 bg-emerald-400/60 rounded-full animate-pulse [animation-delay:0.2s]"></div>
+                                            <div class="w-2 h-2 bg-emerald-400/30 rounded-full animate-pulse [animation-delay:0.4s]"></div>
+                                        </div>
+                                        <span class="text-gray-500 text-sm">{{ "Synthesizing results..." if prev_role == "tool" else "Thinking..." }}</span>
+                                    </div>
+                                {% endif %}
 
-            <div class="w-full justify-center mt-4 mb-8 md:mb-4 max-w-5xl px-4">
-                <div id="chat-form-container">
-                    <form
-                            hx-post="/send"
-                            hx-target="#messages-list"
-                            hx-swap="beforeend settle:50ms scroll:#chat-container:bottom"
-                            class="w-full relative"
-                            hx-on:submit="this.reset()"
-                    >
-                        <input
-                                name="message"
-                                type="text"
-                                placeholder="Ask me anything."
-                                class="w-full bg-neutral-800/50 hover:bg-neutral-700/70 focus:bg-neutral-800 transition duration-300 outline-none rounded-xl py-4 pl-6 pr-12 placeholder-neutral-400"
-                                required
-                        >
-                        <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition flex items-center justify-center">
-                            <iconify-icon icon="mdi:send" style="font-size: 20px;"></iconify-icon>
-                        </button>
-                    </form>
+                                {# Tool calls #}
+                                {% if msg.tool_calls %}
+                                <div class="mt-4 space-y-2 max-w-3xl">
+                                    {% for tool_call in msg.tool_calls %}
+                                        {% set tool_result = namespace(found=false, content='', name='', usage=None) %}
+                                        {% for result_msg in chat_history %}
+                                            {% if result_msg.role == "tool" and result_msg.tool_call_id == tool_call.id %}
+                                                {% set tool_result.found = true %}
+                                                {% set tool_result.content = result_msg.content %}
+                                                {% set tool_result.name = result_msg.name %}
+                                                {% set tool_result.usage = result_msg.usage %}
+                                            {% endif %}
+                                        {% endfor %}
 
-                    <div
-                            id="trigger-bot-response"
-                            class="text-left text-white"
-                            hx-get="/generate-response"
-                            hx-target="#messages-list"
-                            hx-swap="beforeend scroll:#chat-container:bottom"
-                            hx-trigger="generateResponse from:body{% if auto_generate %}, load{% endif %}"
-                    >
-                    </div>
+                                        {% if 'drugcentral' in tool_call.function.name %}
+                                            {% set database = 'DrugCentral' %}
+                                            {% set db_color = 'text-amber-400' %}
+                                            {% set db_bg = 'bg-amber-500/[0.08]' %}
+                                            {% set db_border = 'border-amber-500/20' %}
+                                            {% set db_dot = 'bg-amber-400' %}
+                                            {% set db_glow = 'glow-amber' %}
+                                        {% elif 'pharos' in tool_call.function.name %}
+                                            {% set database = 'Pharos' %}
+                                            {% set db_color = 'text-purple-400' %}
+                                            {% set db_bg = 'bg-purple-500/[0.08]' %}
+                                            {% set db_border = 'border-purple-500/20' %}
+                                            {% set db_dot = 'bg-purple-400' %}
+                                            {% set db_glow = 'glow-purple' %}
+                                        {% else %}
+                                            {% set database = 'ClinicalTrials.gov' %}
+                                            {% set db_color = 'text-blue-400' %}
+                                            {% set db_bg = 'bg-blue-500/[0.08]' %}
+                                            {% set db_border = 'border-blue-500/20' %}
+                                            {% set db_dot = 'bg-blue-400' %}
+                                            {% set db_glow = 'glow-blue' %}
+                                        {% endif %}
+
+                                        <div id="tc-{{ tool_call.id }}">
+                                        {% if tool_result.found %}
+                                            <details class="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden transition-all duration-300 hover:border-white/[0.1]">
+                                                <summary class="flex items-center gap-2.5 cursor-pointer select-none px-4 py-3 transition-all duration-200 hover:bg-white/[0.02]">
+                                                    <span class="inline-flex items-center gap-1.5 {{ db_bg }} {{ db_border }} border {{ db_color }} rounded-full px-2.5 py-0.5 text-xs font-medium">
+                                                        <div class="w-1.5 h-1.5 rounded-full {{ db_dot }}"></div>
+                                                        {{ database }}
+                                                    </span>
+                                                    <span class="text-emerald-400 text-xs">✓</span>
+                                                    {% if tool_result.usage %}
+                                                        <span class="text-gray-700 text-xs ml-auto font-mono">{{ tool_result.usage.total_tokens }} tok</span>
+                                                    {% endif %}
+                                                </summary>
+                                                <div class="border-t border-white/[0.06] px-4 py-4 space-y-3">
+                                                    {% if tool_result.usage %}
+                                                    <div class="flex gap-4 text-xs text-gray-600 font-mono">
+                                                        <span>in: {{ tool_result.usage.prompt_tokens }}</span>
+                                                        <span>out: {{ tool_result.usage.completion_tokens }}</span>
+                                                        <span>total: {{ tool_result.usage.total_tokens }}</span>
+                                                    </div>
+                                                    {% endif %}
+                                                    <pre class="p-3 bg-[#0a0a0a] border border-white/[0.06] rounded-lg overflow-x-auto max-h-80 whitespace-pre-wrap text-xs text-gray-500 font-mono no-scrollbar">{{ tool_result.content[:2000] }}{% if tool_result.content|length > 2000 %}...{% endif %}</pre>
+                                                    <button
+                                                        hx-get="/tool-results/{{ tool_call.id }}"
+                                                        hx-target="#tool-results-modal-content"
+                                                        hx-swap="innerHTML"
+                                                        hx-trigger="click"
+                                                        onclick='document.getElementById("tool-results-modal").showModal()'
+                                                        class="text-xs text-emerald-400/70 hover:text-emerald-400 transition-colors duration-200">
+                                                        View full results →
+                                                    </button>
+                                                </div>
+                                            </details>
+                                        {% else %}
+                                            <div class="{{ db_bg }} border {{ db_border }} rounded-xl px-4 py-3 {{ db_glow }}">
+                                                <div class="flex items-center gap-2.5">
+                                                    <div class="flex gap-1.5">
+                                                        <div class="w-2 h-2 {{ db_dot }} rounded-full animate-pulse"></div>
+                                                        <div class="w-2 h-2 {{ db_dot }}/60 rounded-full animate-pulse [animation-delay:0.2s]"></div>
+                                                        <div class="w-2 h-2 {{ db_dot }}/30 rounded-full animate-pulse [animation-delay:0.4s]"></div>
+                                                    </div>
+                                                    <span class="{{ db_color }} text-sm font-medium">Querying {{ database }}...</span>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
                 </div>
             </div>
-        </div>
-    </div>
-{% endblock %}
 
-{# Fragment for user message #}
-{% block user_message %}
-<div class="chat-message flex justify-end mb-4 last:mb-0">
-    <div class="bg-neutral-800 text-neutral-100 px-5 py-2 rounded-l-full rounded-tr-full max-w-xs">
-        {{ message.content }}
-    </div>
-</div>
-{% endblock %}
-
-{# Fragment for assistant message #}
-{% block assistant_message %}
-<div class="chat-message flex justify-start mb-8 last:mb-0">
-    <div class="prose prose-invert max-w-none min-w-0
-        [&_p]:mb-4 [&_p]:leading-relaxed [&_p:last-child]:mb-0
-        [&_ul]:mb-4 [&_ul]:space-y-2 [&_ul]:pl-5
-        [&_ol]:mb-4 [&_ol]:space-y-2 [&_ol]:pl-5
-        [&_li]:leading-relaxed
-        [&_h1]:mb-4 [&_h1]:mt-6 [&_h1:first-child]:mt-0
-        [&_h2]:mb-3 [&_h2]:mt-5 [&_h2:first-child]:mt-0
-        [&_h3]:mb-2 [&_h3]:mt-4 [&_h3:first-child]:mt-0
-        [&_pre]:mb-4 [&_pre]:p-4 [&_pre]:bg-neutral-800/70 [&_pre]:rounded-lg
-        [&_code]:bg-neutral-800/70 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm
-        [&_table]:block [&_table]:overflow-x-auto [&_table]:mb-4 [&_table]:min-w-full [&_table]:border-collapse [&_table]:bg-neutral-800/50 [&_table]:rounded-lg
-        [&_th]:bg-neutral-800/70 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:font-medium [&_th]:text-neutral-300 [&_th]:border-b [&_th]:border-neutral-700/50
-        [&_td]:px-4 [&_td]:py-3 [&_td]:border-b [&_td]:border-neutral-700/50
-        [&_tr:last-child_td]:border-b-0 [&_tr:hover]:bg-neutral-700/30
-        [&_a]:text-blue-400 [&_a]:underline [&_a:hover]:text-blue-300
-        [&_blockquote]:border-l-4 [&_blockquote]:border-neutral-600 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4">
-        {{ message.content|safe }}
-    </div>
-</div>
-{% endblock %}
-
-{# Fragment for error message #}
-{% block error_message %}
-<div class="chat-message flex justify-start mb-8 last:mb-0">
-    <div class="text-red-400 px-4 py-2">
-        {% if error %}{{ error }}{% else %}An error occurred. Please refresh the page and try again.{% endif %}
-    </div>
-</div>
-{% endblock %}
-
-{# Fragment for status indicator with polling - shows partial content as it's generated #}
-{% block status_indicator %}
-<div class="chat-message flex justify-start mb-8 last:mb-0"
-     hx-get="/task-status/{{ task_id }}"
-     hx-trigger="load delay:8000ms"
-     hx-swap="outerHTML">
-    {% if partial_content %}
-    <div class="prose prose-invert max-w-none min-w-0
-        [&_p]:mb-4 [&_p]:leading-relaxed [&_p:last-child]:mb-0
-        [&_ul]:mb-4 [&_ul]:space-y-2 [&_ul]:pl-5
-        [&_ol]:mb-4 [&_ol]:space-y-2 [&_ol]:pl-5
-        [&_li]:leading-relaxed
-        [&_h1]:mb-4 [&_h1]:mt-6 [&_h1:first-child]:mt-0
-        [&_h2]:mb-3 [&_h2]:mt-5 [&_h2:first-child]:mt-0
-        [&_h3]:mb-2 [&_h3]:mt-4 [&_h3:first-child]:mt-0
-        [&_pre]:mb-4 [&_pre]:p-4 [&_pre]:bg-neutral-800/70 [&_pre]:rounded-lg
-        [&_code]:bg-neutral-800/70 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm
-        [&_table]:block [&_table]:overflow-x-auto [&_table]:mb-4 [&_table]:min-w-full [&_table]:border-collapse [&_table]:bg-neutral-800/50 [&_table]:rounded-lg
-        [&_th]:bg-neutral-800/70 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:font-medium [&_th]:text-neutral-300 [&_th]:border-b [&_th]:border-neutral-700/50
-        [&_td]:px-4 [&_td]:py-3 [&_td]:border-b [&_td]:border-neutral-700/50
-        [&_tr:last-child_td]:border-b-0 [&_tr:hover]:bg-neutral-700/30
-        [&_a]:text-blue-400 [&_a]:underline [&_a:hover]:text-blue-300
-        [&_blockquote]:border-l-4 [&_blockquote]:border-neutral-600 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4">
-        {{ partial_content|safe }}
-        <div class="flex items-center gap-2 text-neutral-500 mt-2 text-sm">
-            <div class="flex gap-1">
-                <div class="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-pulse"></div>
-                <div class="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-pulse [animation-delay:0.2s]"></div>
-                <div class="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-pulse [animation-delay:0.4s]"></div>
+            <!-- Chat Input -->
+            <div class="w-full max-w-6xl px-6 md:px-12 lg:px-20 py-4 border-t border-white/[0.06]">
+                <form
+                    hx-post="/send"
+                    class="w-full relative"
+                    hx-on:submit="this.reset()"
+                >
+                    <input
+                        name="message"
+                        type="text"
+                        placeholder="Ask a follow-up question..."
+                        class="w-full bg-white/[0.03] border border-white/[0.08] focus:border-emerald-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_30px_rgba(52,211,153,0.06)] transition-all duration-300 outline-none rounded-xl py-4 pl-5 pr-28 placeholder-gray-600 text-base"
+                        required
+                    >
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        <a
+                            href="/chats/{{ chat_id }}/export"
+                            class="inline-flex items-center justify-center w-10 h-10 text-gray-600 hover:text-emerald-400 bg-white/[0.04] hover:bg-emerald-500/10 rounded-lg transition-all duration-300"
+                            title="Export conversation as PDF"
+                        >
+                            <iconify-icon icon="mdi:file-pdf-box" width="20" height="20"></iconify-icon>
+                        </a>
+                        <button type="submit" class="inline-flex items-center justify-center w-10 h-10 text-gray-600 hover:text-emerald-400 bg-white/[0.04] hover:bg-emerald-500/10 rounded-lg transition-all duration-300">
+                            <iconify-icon icon="mdi:send" width="20" height="20"></iconify-icon>
+                        </button>
+                    </div>
+                </form>
             </div>
-            <span class="italic">{{ status_message|default("Continuing...") }}</span>
         </div>
     </div>
-    {% else %}
-    <div class="flex items-center gap-2 text-neutral-400 px-2 py-1 text-sm">
-        <div class="flex gap-1">
-            <div class="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-pulse"></div>
-            <div class="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-pulse [animation-delay:0.2s]"></div>
-            <div class="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-pulse [animation-delay:0.4s]"></div>
+
+    {# Tool results modal #}
+    <dialog id="tool-results-modal" class="rounded-2xl shadow-2xl shadow-black/50 bg-[#111111] border border-white/[0.08] text-gray-200 p-0 w-full max-w-4xl backdrop:bg-black/70 backdrop:backdrop-blur-sm" style="margin: auto;">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+            <h3 class="text-sm font-semibold text-white">Full Tool Results</h3>
+            <button onclick='document.getElementById("tool-results-modal").close()' class="text-gray-600 hover:text-white transition-colors duration-200 text-xl leading-none">&times;</button>
         </div>
-        <span class="italic">{{ status_message|default("Starting...") }}</span>
-    </div>
+        <div id="tool-results-modal-content" class="p-5">
+            <div class="text-center text-gray-600 text-sm py-4">Loading...</div>
+        </div>
+    </dialog>
+
+    {% if chat_id and not is_sse|default(false) %}
+    <script>
+    (function() {
+        if (window._chatSSE) { window._chatSSE.close(); }
+
+        var source = new EventSource('/chat/{{ chat_id }}/updates');
+        window._chatSSE = source;
+
+        source.addEventListener('content-stream', function(e) {
+            var data = JSON.parse(e.data);
+            var el = document.getElementById('msg-content-' + data.msgId);
+            if (!el) return;
+            el.innerHTML = data.html;
+
+            var c = document.getElementById('chat-container');
+            if (c && c.scrollTop >= -100) { c.scrollTop = 0; }
+        });
+
+        source.addEventListener('chat-update', function(e) {
+            var target = document.getElementById('chat-page-container');
+            if (!target) return;
+
+            if (typeof Idiomorph !== 'undefined') {
+                Idiomorph.morph(target, e.data, {morphStyle: 'outerHTML'});
+            } else {
+                target.outerHTML = e.data;
+            }
+
+            var fresh = document.getElementById('chat-page-container');
+            if (fresh) { htmx.process(fresh); }
+
+            var c = document.getElementById('chat-container');
+            if (c && c.scrollTop >= -100) { c.scrollTop = 0; }
+        });
+
+        document.body.addEventListener('htmx:afterSettle', function() {
+            if (window._chatSSE && !document.getElementById('chat-page-container')) {
+                window._chatSSE.close();
+                window._chatSSE = null;
+            }
+        });
+    })();
+    </script>
     {% endif %}
-</div>
 {% endblock %}

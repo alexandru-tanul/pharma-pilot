@@ -30,6 +30,12 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 FROM python:3.13-slim-bookworm
 
+# WeasyPrint system dependencies (Pango, Cairo, GDK-Pixbuf) + Liberation fonts
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf-2.0-0 \
+    libffi-dev libcairo2 libglib2.0-0 fonts-liberation \
+    && rm -rf /var/lib/apt/lists/*
+
 # Create non-root user matching host UID:GID
 ARG UID=1000
 ARG GID=1000
