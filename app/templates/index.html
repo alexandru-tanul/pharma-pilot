@@ -1,64 +1,86 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div id="landing-page" class="flex-1 flex flex-col">
-        <!-- Centered title and description -->
-        <div class="flex-1 flex flex-col items-center justify-center text-center px-4 md:px-8">
-            <div>
-                <iconify-icon icon="mdi:file-document-outline" class="text-neutral-600 mb-4 md:mb-6 text-6xl md:text-8xl"></iconify-icon>
-                <h1 class="text-2xl md:text-4xl font-bold text-neutral-300 mb-2 md:mb-4">Clinical Trials Scout</h1>
-                <p class="text-neutral-400 text-sm md:text-lg mb-2 md:mb-4">
-                    Search for clinical trials or chat with the AI assistant.
+    <div id="landing-page" class="flex-1 flex flex-col relative overflow-hidden">
+
+        <!-- Hero -->
+        <div class="flex-1 flex flex-col items-center justify-center text-center px-4 md:px-8 relative z-10">
+            <div class="animate-fade-in">
+                <!-- Pill badge -->
+                <div class="inline-flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-1.5 mb-6">
+                    <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                    <span class="text-xs text-gray-400 font-medium">AI-Powered Research Assistant</span>
+                </div>
+
+                <h1 class="text-4xl md:text-6xl font-bold text-white mb-4 tracking-tight leading-tight">
+                    Pharma <span class="bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-400 bg-clip-text text-transparent">Pilot</span>
+                </h1>
+                <p class="text-gray-500 text-base md:text-lg mb-8 max-w-lg mx-auto leading-relaxed">
+                    Navigate clinical trials, drug targets, and protein biology across three biomedical databases.
                 </p>
-                <!-- ClinicalTrials.gov Logo -->
-                <div class="flex items-center justify-center gap-2 mt-2 md:mt-4">
-                    <span class="text-neutral-500 text-xs md:text-sm">Powered by</span>
-                    <img src="https://clinicaltrials.gov/assets/images/ctg-header-logo.svg" alt="ClinicalTrials.gov" class="h-5 md:h-6 opacity-70">
+
+                <!-- Powered by — colored glowing badges -->
+                <div class="flex flex-col items-center gap-3 animate-fade-in-delay-1">
+                    <span class="text-gray-700 text-[11px] uppercase tracking-[0.2em] font-medium">Powered by</span>
+                    <div class="flex flex-wrap items-center justify-center gap-3">
+                        <span class="inline-flex items-center gap-1.5 bg-amber-500/[0.08] border border-amber-500/20 text-amber-400 rounded-full px-4 py-1.5 text-sm font-medium glow-amber">
+                            <div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+                            DrugCentral
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 bg-blue-500/[0.08] border border-blue-500/20 text-blue-400 rounded-full px-4 py-1.5 text-sm font-medium glow-blue">
+                            <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                            ClinicalTrials.gov
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 bg-purple-500/[0.08] border border-purple-500/20 text-purple-400 rounded-full px-4 py-1.5 text-sm font-medium glow-purple">
+                            <div class="w-1.5 h-1.5 rounded-full bg-purple-400"></div>
+                            Pharos
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Input and Examples at bottom -->
-        <div class="w-full max-w-5xl mx-auto flex flex-col gap-2 md:gap-4 px-4">
-                <!-- Example Queries Grid -->
-                <div class="w-full grid grid-cols-2 gap-2 md:gap-4">
-                    {% for prompt in example_prompts %}
-                    <button
-                        hx-post="/send"
-                        hx-vals='{"message": "{{ prompt.message }}"}'
-                        hx-swap="none"
-                        class="cursor-pointer bg-neutral-800/30 hover:bg-neutral-700/50 p-2.5 md:p-4 rounded-lg md:rounded-xl transition text-left group"
-                    >
-                        <div class="flex flex-col gap-1 md:gap-2">
-                            <div class="flex items-center gap-1.5 md:gap-2">
-                                <iconify-icon icon="{{ prompt.icon }}" class="{{ prompt.icon_color }} group-hover:text-white transition flex-shrink-0 text-base md:text-xl"></iconify-icon>
-                                <h3 class="text-xs md:text-sm font-semibold text-white">{{ prompt.title }}</h3>
-                            </div>
-                            <p class="text-[10px] md:text-xs text-neutral-400 text-left line-clamp-2">"{{ prompt.message }}"</p>
+        <!-- Example Prompts + Input -->
+        <div class="w-full max-w-4xl mx-auto flex flex-col gap-4 px-4 pb-6 md:pb-8 relative z-10">
+            <!-- Example Queries Grid -->
+            <div class="w-full grid grid-cols-2 md:grid-cols-3 gap-2.5 animate-fade-in-delay-2">
+                {% for prompt in example_prompts %}
+                <button
+                    hx-post="/send"
+                    hx-vals='{"message": "{{ prompt.message }}"}'
+                    hx-swap="none"
+                    class="cursor-pointer bg-white/[0.02] border border-white/[0.06] hover:border-emerald-500/40 hover:bg-emerald-500/[0.04] p-4 rounded-xl transition-all duration-300 text-left group hover:shadow-[0_0_30px_rgba(52,211,153,0.06)]"
+                >
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-2">
+                            <iconify-icon icon="{{ prompt.icon }}" class="{{ prompt.icon_color }} group-hover:text-emerald-400 transition-colors duration-300 flex-shrink-0 text-lg"></iconify-icon>
+                            <h3 class="text-sm font-medium text-gray-200 group-hover:text-white transition-colors duration-300">{{ prompt.title }}</h3>
                         </div>
-                    </button>
-                    {% endfor %}
-                </div>
+                        <p class="text-xs text-gray-600 group-hover:text-gray-500 line-clamp-2 leading-relaxed transition-colors duration-300">"{{ prompt.message }}"</p>
+                    </div>
+                </button>
+                {% endfor %}
+            </div>
 
-                <!-- Input Form -->
-                <div class="w-full mt-2 md:mt-4 mb-6 md:mb-4">
-                    <form
-                            hx-post="/send"
-                            hx-swap="none"
-                            class="w-full relative"
+            <!-- Input Form -->
+            <div class="animate-fade-in-delay-3">
+                <form
+                    hx-post="/send"
+                    hx-swap="none"
+                    class="w-full relative"
+                >
+                    <input
+                        name="message"
+                        type="text"
+                        placeholder="Ask about clinical trials, drugs, or protein targets..."
+                        class="w-full bg-white/[0.03] border border-white/[0.08] focus:border-emerald-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_30px_rgba(52,211,153,0.08)] transition-all duration-300 outline-none rounded-xl py-4 pl-5 pr-14 placeholder-gray-600 text-base"
+                        required
                     >
-                        <input
-                                name="message"
-                                type="text"
-                                placeholder="Ask me anything."
-                                class="w-full bg-neutral-800/50 hover:bg-neutral-700/70 focus:bg-neutral-800 transition duration-300 outline-none rounded-lg md:rounded-xl py-3 md:py-4 pl-4 md:pl-6 pr-10 md:pr-12 placeholder-neutral-400 text-sm md:text-base"
-                                required
-                        >
-                        <button type="submit" class="absolute right-2.5 md:right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition flex items-center justify-center">
-                            <iconify-icon icon="mdi:send" class="text-lg md:text-xl"></iconify-icon>
-                        </button>
-                    </form>
-                </div>
+                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-emerald-400 bg-white/[0.04] hover:bg-emerald-500/10 p-2 rounded-lg transition-all duration-300 flex items-center justify-center">
+                        <iconify-icon icon="mdi:send" class="text-lg"></iconify-icon>
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 {% endblock %}

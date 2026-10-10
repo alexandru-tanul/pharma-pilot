@@ -42,3 +42,9 @@ Thumbs.db
 dist/
 build/
 db.sqlite3
+
+# DrugCentral database dump (large file)
+data/
+
+# Generated PDF reports
+pharma-pilot-report-*.pdf

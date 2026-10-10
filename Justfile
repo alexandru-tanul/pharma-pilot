@@ -1,20 +1,49 @@
 default:
     @just --list
 
-run *args:
-    #!/usr/bin/env sh
-    # Start the FastAPI server via Docker
-    docker compose up -d
+# Initialize project: download data and prepare environment
+init:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cp -n .env.example .env
+    echo "Building Docker images..."
+    docker compose build
+    echo ""
+    echo "Downloading datasets (about 4 GB, skipped if already present)..."
+    just download-data
+    echo ""
+    echo "========================================="
+    echo "Project initialized successfully!"
+    echo "========================================="
+    echo ""
+    echo "IMPORTANT: Before starting the services, please update the .env file with the correct values:"
+    echo ""
+    echo "  Required configuration:"
+    echo "    - SECRET_KEY: Generate a secure random key"
+    echo "    - ANTHROPIC_API_KEY: Your Anthropic API key"
+    echo "    - OPENAI_API_KEY: Your OpenAI API key (if using OpenAI models)"
+    echo "    - GEMINI_API_KEY: Your Google Gemini API key (if using Gemini models)"
+    echo "    - POSTGRES_PASSWORD: Secure password for PostgreSQL"
+    echo ""
+    echo "Once configured, start the services with:"
+    echo "  just up"
+    echo ""
+    echo "Services will be available at:"
+    echo "  - FastAPI: http://localhost:8000"
+    echo "  - PgWeb:   http://localhost:8081"
+    echo ""
 
-    # Open the browser (after 2s)
-    sleep 2 && py -m webbrowser http://127.0.0.1:8000/
+# Download the Parquet datasets that are missing (no gh CLI needed)
+download-data:
+    docker compose run --rm --no-deps fastapi python -m app.data_sync download
 
-# ====================================
-# Docker Commands
-# ====================================
-# Set COMPOSE_FILE env var to choose config:
-#   export COMPOSE_FILE=docker-compose.local.yml      (default)
-#   export COMPOSE_FILE=docker-compose.production.yml
+# Update every dataset to the newest monthly release
+update-data:
+    docker compose run --rm --no-deps fastapi python -m app.data_sync update
+
+# Show local vs latest dataset versions
+data-status:
+    docker compose run --rm --no-deps fastapi python -m app.data_sync status
 
 # Build Docker images
 build:
@@ -32,26 +61,10 @@ down:
 logs:
     docker compose logs -f
 
-# Access PostgreSQL database
-psql:
-    docker compose exec postgres psql -U postgres -d chatbot
+# Create a new migration (like Django's makemigrations)
+makemigrations name:
+    docker compose exec fastapi aerich migrate --name {{name}}
 
-# Run Aerich migrations (upgrade database)
+# Apply all pending migrations (like Django's migrate)
 migrate:
-    docker compose run --rm fastapi aerich upgrade
-
-# Create Aerich migrations
-makemigrations:
-    docker compose run --rm fastapi aerich migrate
-
-# Initialize Aerich (run once for new projects)
-init-db:
-    docker compose run --rm fastapi aerich init-db
-
-# Access Python shell (Docker)
-shell:
-    docker compose run --rm fastapi python -i -c "from tortoise import Tortoise; import asyncio; asyncio.run(Tortoise.init(config_file='aerich.ini'))"
-
-# Rebuild Tailwind CSS manually
-css:
-    docker compose restart tailwindcss
+    docker compose exec fastapi sh -c "aerich upgrade 2>/dev/null || (aerich init-db && aerich upgrade)"

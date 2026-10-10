@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Data · Pharma Pilot{% endblock title %}
+
+{% block content %}
+<div class="flex-1 overflow-y-auto">
+    <div class="max-w-3xl mx-auto px-6 py-12 md:py-16">
+
+        <div class="animate-fade-in mb-8">
+            <h1 class="text-2xl font-semibold text-white tracking-tight">Datasets</h1>
+            <p class="text-sm text-gray-500 mt-2 leading-relaxed">
+                Pharma Pilot answers from three biomedical databases stored locally as Parquet files
+                and queried with DuckDB. They are published monthly as GitHub releases of
+                <a href="https://github.com/scriptogre/biomedical-data" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-emerald-400 underline underline-offset-2">scriptogre/biomedical-data</a>.
+                Downloads total about 4 GB and run in the background; the app reloads each dataset as soon as it is installed.
+            </p>
+        </div>
+
+        {% if missing %}
+        <div class="animate-fade-in-delay-1 mb-6 rounded-xl border border-amber-500/20 bg-amber-500/5 px-5 py-4 text-sm text-amber-300">
+            Some datasets are not downloaded yet, so the chat cannot answer questions about them.
+            Download them below, then return to <a href="/" hx-boost="true" class="underline underline-offset-2">the chat</a>.
+        </div>
+        {% endif %}
+
+        <div class="animate-fade-in-delay-2">
+            {% include "partials/data_rows.html" %}
+        </div>
+
+        <div class="animate-fade-in-delay-3 mt-8 text-xs text-gray-600 leading-relaxed">
+            <p>
+                <button hx-get="/data/status?refresh=true" hx-target="#data-rows" hx-swap="outerHTML"
+                        class="text-gray-400 hover:text-emerald-400 underline underline-offset-2">Check for new releases</button>
+                · From a terminal: <code class="text-gray-400">python -m app.data_sync update</code>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock content %}
