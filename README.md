@@ -36,8 +36,8 @@ The data is stored locally as Parquet files (about 4 GB) and queried in-process 
 Requirements: Docker with Compose, and [just](https://github.com/casey/just).
 
 ```bash
-git clone https://github.com/alexandru-tanul/clinical-trials-scout.git
-cd clinical-trials-scout
+git clone https://github.com/alexandru-tanul/pharma-pilot.git
+cd pharma-pilot
 just init          # creates .env, builds the image, downloads the datasets
 ```
 
