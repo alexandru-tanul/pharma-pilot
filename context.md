@@ -4,7 +4,7 @@
 
 ## 1. What it is
 
-Pharma Pilot (repository `alexandru-tanul/pharma-pilot`, live at https://clinical-trials-scout.alexandrutanul.com) is an AI research assistant for pharmaceutical questions. A user asks in plain English about drugs, diseases, clinical trials, or protein targets. An LLM turns the question into SQL against three biomedical databases held locally as Parquet files, DuckDB runs the queries, and the model writes an answer with tables and source attribution. Answers stream to the browser while they are generated.
+Pharma Pilot (repository `alexandru-tanul/pharma-pilot`, live at https://pharma-pilot.alexandrutanul.com) is an AI research assistant for pharmaceutical questions. A user asks in plain English about drugs, diseases, clinical trials, or protein targets. An LLM turns the question into SQL against three biomedical databases held locally as Parquet files, DuckDB runs the queries, and the model writes an answer with tables and source attribution. Answers stream to the browser while they are generated.
 
 It is a full-stack monolith: FastAPI serving Jinja2 templates with HTMX for interactivity, Server-Sent Events for live updates, no JavaScript framework and no front-end build step.
 

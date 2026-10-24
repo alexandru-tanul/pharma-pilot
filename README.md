@@ -2,7 +2,7 @@
 
 AI-powered pharmaceutical research assistant. Ask questions in plain English about clinical trials, drugs, targets, and protein biology; the app translates them into SQL against three biomedical databases, runs the queries locally, and streams back an answer with tables and sources.
 
-Live demo: https://clinical-trials-scout.alexandrutanul.com
+Live demo: https://pharma-pilot.alexandrutanul.com
 
 ## What it does
 
